@@ -1,0 +1,44 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FEF3C7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FDE68A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="icon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#bg)" rx="16"/>
+  
+  <!-- Lightning Icon -->
+  <g transform="translate(150, 80)">
+    <circle cx="50" cy="50" r="50" fill="url(#icon)" opacity="0.1"/>
+    <path d="M50 20L65 40H55L70 60L50 50H60L50 20Z" fill="url(#icon)"/>
+  </g>
+  
+  <!-- Speed indicators -->
+  <rect x="50" y="200" width="300" height="60" fill="white" rx="8" opacity="0.8"/>
+  <rect x="70" y="210" width="80" height="15" fill="#F59E0B" rx="4"/>
+  <rect x="70" y="230" width="200" height="8" fill="#E2E8F0" rx="2"/>
+  <rect x="70" y="245" width="150" height="8" fill="#E2E8F0" rx="2"/>
+  
+  <!-- Speed lines -->
+  <g transform="translate(300, 210)">
+    <line x1="0" y1="10" x2="20" y2="10" stroke="#F59E0B" stroke-width="2"/>
+    <line x1="0" y1="15" x2="15" y2="15" stroke="#F59E0B" stroke-width="2"/>
+    <line x1="0" y1="20" x2="25" y2="20" stroke="#F59E0B" stroke-width="2"/>
+    <line x1="0" y1="25" x2="18" y2="25" stroke="#F59E0B" stroke-width="2"/>
+  </g>
+  
+  <!-- Performance bars -->
+  <g transform="translate(50, 180)">
+    <rect x="0" y="0" width="8" height="20" fill="#10B981" rx="1"/>
+    <rect x="12" y="0" width="8" height="25" fill="#10B981" rx="1"/>
+    <rect x="24" y="0" width="8" height="30" fill="#10B981" rx="1"/>
+    <rect x="36" y="0" width="8" height="35" fill="#10B981" rx="1"/>
+    <rect x="48" y="0" width="8" height="40" fill="#10B981" rx="1"/>
+  </g>
+</svg>
