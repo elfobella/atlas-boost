@@ -4,6 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { 
   User, 
@@ -109,10 +110,10 @@ export default function Dashboard() {
           className="mb-8"
         >
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Hoş geldiniz, {session.user?.name?.split(" ")[0] || "Kullanıcı"}! 👋
+            Hoş geldiniz, {session.user?.name?.split(" ")[0] || "Kullanıcı"}! 🎮
           </h2>
           <p className="text-gray-600">
-            Dashboard'unuza hoş geldiniz. İşte güncel durumunuz.
+            AtlasBoost dashboard'una hoş geldiniz. Rank boost servislerimizi keşfedin.
           </p>
         </motion.div>
 
@@ -120,30 +121,30 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[
             {
-              title: "Toplam Kullanıcı",
-              value: "1,234",
-              change: "+12%",
-              icon: Users,
+              title: "Aktif Boost'lar",
+              value: "12",
+              change: "+5%",
+              icon: TrendingUp,
               color: "from-blue-500 to-blue-600",
             },
             {
-              title: "Aktif Projeler",
-              value: "56",
-              change: "+8%",
+              title: "Tamamlanan Boost'lar",
+              value: "156",
+              change: "+18%",
               icon: BarChart3,
               color: "from-green-500 to-green-600",
             },
             {
               title: "Bu Ay Gelir",
-              value: "₺45,678",
+              value: "₺8,450",
               change: "+23%",
               icon: TrendingUp,
               color: "from-purple-500 to-purple-600",
             },
             {
-              title: "Tamamlanan Görevler",
-              value: "89",
-              change: "+15%",
+              title: "Müşteri Memnuniyeti",
+              value: "98%",
+              change: "+2%",
               icon: Plus,
               color: "from-orange-500 to-orange-600",
             },
@@ -179,20 +180,25 @@ export default function Dashboard() {
           <h3 className="text-xl font-bold text-gray-900 mb-4">Hızlı İşlemler</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { title: "Yeni Proje", icon: Plus, color: "bg-blue-500" },
-              { title: "Rapor Oluştur", icon: BarChart3, color: "bg-green-500" },
-              { title: "Kullanıcı Ekle", icon: Users, color: "bg-purple-500" },
-              { title: "Ayarlar", icon: Settings, color: "bg-gray-500" },
+              { title: "Yeni Boost", icon: Plus, color: "bg-blue-500", href: "/games" },
+              { title: "Boost Geçmişi", icon: BarChart3, color: "bg-green-500", href: "#" },
+              { title: "Destek", icon: Users, color: "bg-purple-500", href: "#" },
+              { title: "Ayarlar", icon: Settings, color: "bg-gray-500", href: "#" },
             ].map((action, index) => (
-              <motion.button
+              <motion.div
                 key={action.title}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`${action.color} text-white p-4 rounded-xl hover:opacity-90 transition-all duration-200 flex flex-col items-center space-y-2`}
               >
-                <action.icon className="h-6 w-6" />
-                <span className="text-sm font-medium">{action.title}</span>
-              </motion.button>
+                <Link href={action.href}>
+                  <button
+                    className={`${action.color} text-white p-4 rounded-xl hover:opacity-90 transition-all duration-200 flex flex-col items-center space-y-2 w-full`}
+                  >
+                    <action.icon className="h-6 w-6" />
+                    <span className="text-sm font-medium">{action.title}</span>
+                  </button>
+                </Link>
+              </motion.div>
             ))}
           </div>
         </motion.div>

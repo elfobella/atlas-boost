@@ -94,14 +94,14 @@ export default function Home() {
               className="mb-8"
             >
               <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6">
-                Modern
+                Profesyonel
                 <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  {" "}Web Uygulaması
+                  {" "}Game Boost
                 </span>
               </h1>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                Next.js, NextAuth.js ve modern teknolojilerle geliştirilmiş, 
-                güvenli ve hızlı web uygulaması deneyimi yaşayın.
+                League of Legends ve Valorant için profesyonel rank boost servisleri. 
+                Güvenli, hızlı ve garantili boost deneyimi yaşayın.
               </p>
             </motion.div>
 
@@ -142,22 +142,22 @@ export default function Home() {
               {[
                 {
                   icon: Shield,
-                  title: "Güvenli Giriş",
-                  description: "NextAuth.js ile güvenli authentication sistemi",
+                  title: "100% Güvenli",
+                  description: "Hesabınız tamamen güvende, garantili güvenlik",
                   color: "from-green-500 to-green-600",
                   image: "/images/features/feature-1.svg"
                 },
                 {
                   icon: Zap,
-                  title: "Hızlı Performans",
-                  description: "Next.js 15 ile optimize edilmiş hızlı yükleme",
+                  title: "Hızlı Teslimat",
+                  description: "24-48 saat içinde boost tamamlanır",
                   color: "from-yellow-500 to-yellow-600",
                   image: "/images/features/feature-2.svg"
                 },
                 {
                   icon: Users,
-                  title: "Google OAuth",
-                  description: "Google hesabınızla tek tıkla giriş yapın",
+                  title: "Profesyonel Oyuncular",
+                  description: "Sadece en iyi oyuncularımız boost yapar",
                   color: "from-blue-500 to-blue-600",
                   image: "/images/features/feature-3.svg"
                 }
@@ -201,7 +201,7 @@ export default function Home() {
               Neden AtlasBoost?
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Modern web teknolojileri ile geliştirilmiş, kullanıcı dostu arayüz
+              Profesyonel game boost servisleri ile hedeflediğiniz rank'a ulaşın
             </p>
           </motion.div>
 
@@ -215,23 +215,23 @@ export default function Home() {
               {[
                 {
                   icon: CheckCircle,
-                  title: "Modern Tasarım",
-                  description: "Tailwind CSS ve Framer Motion ile responsive ve animasyonlu arayüz"
+                  title: "Güvenli Boost",
+                  description: "Hesabınız tamamen güvende, hiçbir risk yok"
                 },
                 {
                   icon: CheckCircle,
-                  title: "Güvenli Authentication",
-                  description: "NextAuth.js ile güvenli giriş sistemi ve Google OAuth desteği"
+                  title: "Hızlı Teslimat",
+                  description: "24-48 saat içinde boost tamamlanır"
                 },
                 {
                   icon: CheckCircle,
-                  title: "Database Yönetimi",
-                  description: "Prisma ORM ile modern veritabanı yönetimi"
+                  title: "Profesyonel Oyuncular",
+                  description: "Sadece en iyi oyuncularımız boost yapar"
                 },
                 {
                   icon: CheckCircle,
-                  title: "TypeScript Desteği",
-                  description: "Tip güvenliği ile daha güvenilir kod yapısı"
+                  title: "Garantili Sonuç",
+                  description: "Hedeflediğiniz rank'a ulaşma garantisi"
                 }
               ].map((feature, index) => (
                 <div key={feature.title} className="flex items-start space-x-4">
