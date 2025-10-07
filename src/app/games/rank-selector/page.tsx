@@ -168,7 +168,7 @@ export default function RankSelectorPage() {
                 
                 <div className="flex-1">
                   <CheckoutButton
-                    game={selectedGame}
+                    game={selectedGame!}
                     currentRank={selectedBoost.currentRank}
                     currentDivision={selectedBoost.currentDivision}
                     targetRank={selectedBoost.targetRank}

@@ -30,10 +30,11 @@ export async function POST(request: Request) {
       event = JSON.parse(body);
       console.warn('⚠️ Webhook signature verification skipped - STRIPE_WEBHOOK_SECRET not set');
     }
-  } catch (err: any) {
-    console.error('⚠️ Webhook signature verification failed:', err.message);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    console.error('⚠️ Webhook signature verification failed:', errorMessage);
     return NextResponse.json(
-      { error: `Webhook Error: ${err.message}` },
+      { error: `Webhook Error: ${errorMessage}` },
       { status: 400 }
     );
   }
@@ -66,7 +67,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ received: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Webhook handler error:', error);
     return NextResponse.json(
       { error: 'Webhook handler failed' },

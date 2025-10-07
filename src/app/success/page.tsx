@@ -10,7 +10,7 @@ function SuccessContent() {
   const t = useTranslations('success');
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
-  const [sessionData, setSessionData] = useState<any>(null);
+  // const [sessionData, setSessionData] = useState<Record<string, unknown> | null>(null); // Unused variables
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

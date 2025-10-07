@@ -68,8 +68,9 @@ export default function SignUpPage() {
         router.push('/dashboard');
         router.refresh();
       }
-    } catch (error: any) {
-      setError(error.message || t('errorOccurred'));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : t('errorOccurred');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

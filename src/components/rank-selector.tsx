@@ -9,7 +9,6 @@ import {
   getSuggestedTargets,
   getAvailableRanks,
   getDivisions,
-  ERROR_MESSAGES,
   type ValidationResult,
   type RankSuggestion
 } from "@/lib/rank-utils";

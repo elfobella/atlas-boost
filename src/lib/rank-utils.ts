@@ -15,7 +15,7 @@ export interface ValidationResult {
 
 export interface RankSuggestion {
   rank: string;
-  division?: string;
+  division?: string | number;
   type: 'SAME_RANK_UP' | 'NEXT_RANK' | 'MULTI_RANK_UP';
   price: number;
   estimatedTime: string;
@@ -190,7 +190,7 @@ export function getSuggestedTargets(
   currentDivision: string | number | undefined
 ): RankSuggestion[] {
   const suggestions: RankSuggestion[] = [];
-  const ranks = game === 'lol' ? LoL_RANKS : Valorant_RANKS;
+  // const ranks = game === 'lol' ? LoL_RANKS : Valorant_RANKS; // Unused variable
   const currentValue = calculateRankValue(game, currentRank, currentDivision);
   
   // Aynı rank içi yukarı divisions
@@ -215,17 +215,19 @@ export function getSuggestedTargets(
   const nextRank = getNextRank(game, currentRank);
   if (nextRank) {
     const firstDivision = getFirstDivision(game, nextRank);
-    const price = calculateBoostPrice(game, currentRank, currentDivision, nextRank, firstDivision);
-    const estimatedTime = calculateEstimatedTime(game, currentValue, calculateRankValue(game, nextRank, firstDivision));
+    if (firstDivision !== null) {
+      const price = calculateBoostPrice(game, currentRank, currentDivision, nextRank, firstDivision);
+      const estimatedTime = calculateEstimatedTime(game, currentValue, calculateRankValue(game, nextRank, firstDivision));
     
-    suggestions.push({
-      rank: nextRank,
-      division: firstDivision,
-      type: 'NEXT_RANK',
-      price,
-      estimatedTime,
-      priority: 2
-    });
+      suggestions.push({
+        rank: nextRank,
+        division: firstDivision,
+        type: 'NEXT_RANK',
+        price,
+        estimatedTime,
+        priority: 2
+      });
+    }
   }
   
   return suggestions.sort((a, b) => a.priority - b.priority);

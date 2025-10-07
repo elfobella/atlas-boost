@@ -58,9 +58,10 @@ export function CheckoutButton({
       } else {
         throw new Error('No checkout URL received');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Checkout error:', error);
-      setError(error.message || 'Ödeme başlatılamadı. Lütfen tekrar deneyin.');
+      const errorMessage = error instanceof Error ? error.message : 'Ödeme başlatılamadı. Lütfen tekrar deneyin.';
+      setError(errorMessage);
       setLoading(false);
     }
   };

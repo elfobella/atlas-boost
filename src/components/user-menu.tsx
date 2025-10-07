@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { User, LogOut, Settings, Package, Loader2 } from 'lucide-react';
+import { LogOut, Settings, Package, Loader2 } from 'lucide-react';
 
 export function UserMenu() {
   const t = useTranslations('auth');
@@ -46,6 +46,7 @@ export function UserMenu() {
       >
         <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
           {session.user.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={session.user.image} alt={session.user.name || ''} className="rounded-full w-full h-full object-cover" />
           ) : (
             session.user.name?.charAt(0).toUpperCase() || session.user.email?.charAt(0).toUpperCase() || 'U'

@@ -36,7 +36,7 @@ export default function SignInPage() {
         router.push(callbackUrl);
         router.refresh();
       }
-    } catch (error) {
+    } catch {
       setError(t('errorOccurred'));
     } finally {
       setLoading(false);
