@@ -1,63 +1,64 @@
-import { NextRequest, NextResponse } from 'next/server';
-import stripe from '@/lib/stripe';
-import { PrismaClient } from '@prisma/client';
+import { headers } from 'next/headers';
+import { NextResponse } from 'next/server';
+import { stripe } from '@/lib/stripe';
+import Stripe from 'stripe';
 
-const prisma = new PrismaClient();
-
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   const body = await request.text();
-  const signature = request.headers.get('stripe-signature');
+  const headersList = await headers();
+  const signature = headersList.get('stripe-signature');
 
   if (!signature) {
     return NextResponse.json(
-      { error: 'Missing stripe signature' },
+      { error: 'No signature found' },
       { status: 400 }
     );
   }
 
-  let event;
+  let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET || 'whsec_your_webhook_secret_here'
-    );
-  } catch (err) {
-    console.error('Webhook signature verification failed:', err);
+    // Verify webhook signature
+    if (process.env.STRIPE_WEBHOOK_SECRET) {
+      event = stripe.webhooks.constructEvent(
+        body,
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } else {
+      // For development without webhook secret
+      event = JSON.parse(body);
+      console.warn('⚠️ Webhook signature verification skipped - STRIPE_WEBHOOK_SECRET not set');
+    }
+  } catch (err: any) {
+    console.error('⚠️ Webhook signature verification failed:', err.message);
     return NextResponse.json(
-      { error: 'Invalid signature' },
+      { error: `Webhook Error: ${err.message}` },
       { status: 400 }
     );
   }
 
+  // Handle the event
   try {
     switch (event.type) {
       case 'checkout.session.completed':
-        const session = event.data.object;
-        
-        // Create order in database
-        await prisma.order.create({
-          data: {
-            id: session.id,
-            userId: session.metadata?.userId || '',
-            gameId: session.metadata?.gameId || '',
-            serviceId: session.metadata?.serviceId || '',
-            currentRankId: session.metadata?.currentRank || '',
-            targetRankId: session.metadata?.targetRank || '',
-            status: 'PENDING',
-            price: session.amount_total || 0,
-            estimatedTime: '1-3 gün',
-            notes: `Payment completed for ${session.metadata?.gameName} ${session.metadata?.serviceName}`,
-          },
-        });
-        
-        console.log('Order created:', session.id);
+        const session = event.data.object as Stripe.Checkout.Session;
+        await handleCheckoutSessionCompleted(session);
         break;
 
       case 'payment_intent.succeeded':
-        const paymentIntent = event.data.object;
-        console.log('Payment succeeded:', paymentIntent.id);
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        await handlePaymentIntentSucceeded(paymentIntent);
+        break;
+
+      case 'payment_intent.payment_failed':
+        const failedPayment = event.data.object as Stripe.PaymentIntent;
+        await handlePaymentIntentFailed(failedPayment);
+        break;
+
+      case 'charge.refunded':
+        const refund = event.data.object as Stripe.Charge;
+        await handleChargeRefunded(refund);
         break;
 
       default:
@@ -65,11 +66,74 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ received: true });
-  } catch (error) {
-    console.error('Error processing webhook:', error);
+  } catch (error: any) {
+    console.error('Webhook handler error:', error);
     return NextResponse.json(
-      { error: 'Webhook processing failed' },
+      { error: 'Webhook handler failed' },
       { status: 500 }
     );
   }
+}
+
+// Handle successful checkout
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+  console.log('✅ Checkout session completed:', session.id);
+  console.log('Customer email:', session.customer_email);
+  console.log('Amount total:', session.amount_total);
+  console.log('Metadata:', session.metadata);
+
+  // TODO: Save order to database
+  // const order = await db.boostOrders.create({
+  //   stripeSessionId: session.id,
+  //   game: session.metadata?.game,
+  //   currentRank: session.metadata?.currentRank,
+  //   currentDivision: session.metadata?.currentDivision,
+  //   targetRank: session.metadata?.targetRank,
+  //   targetDivision: session.metadata?.targetDivision,
+  //   price: (session.amount_total || 0) / 100,
+  //   customerEmail: session.customer_email,
+  //   paymentStatus: 'succeeded',
+  //   orderStatus: 'pending',
+  //   paidAt: new Date()
+  // });
+
+  // TODO: Send confirmation email
+  // await sendOrderConfirmationEmail(session.customer_email, order);
+}
+
+// Handle successful payment intent
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
+  console.log('✅ Payment intent succeeded:', paymentIntent.id);
+  
+  // TODO: Update payment status in database
+  // await db.boostOrders.updateMany({
+  //   where: { stripePaymentIntentId: paymentIntent.id },
+  //   data: { paymentStatus: 'succeeded' }
+  // });
+}
+
+// Handle failed payment
+async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
+  console.log('❌ Payment intent failed:', paymentIntent.id);
+  console.log('Failure reason:', paymentIntent.last_payment_error?.message);
+
+  // TODO: Update order status
+  // await db.boostOrders.updateMany({
+  //   where: { stripePaymentIntentId: paymentIntent.id },
+  //   data: { paymentStatus: 'failed' }
+  // });
+
+  // TODO: Send failure notification email
+}
+
+// Handle refund
+async function handleChargeRefunded(charge: Stripe.Charge) {
+  console.log('💰 Charge refunded:', charge.id);
+  console.log('Refund amount:', charge.amount_refunded);
+
+  // TODO: Update order status
+  // await db.boostOrders.updateMany({
+  //   where: { stripePaymentIntentId: charge.payment_intent as string },
+  //   data: { paymentStatus: 'refunded', orderStatus: 'cancelled' }
+  // });
 }
