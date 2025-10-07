@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTranslations } from 'next-intl';
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { UserMenu } from "@/components/user-menu";
 import { Gamepad2, Menu, X } from "lucide-react";
 import { useState } from "react";
 
@@ -55,12 +56,7 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-4">
             <LanguageSwitcher />
             <ThemeToggle />
-            <Link 
-              href="/dashboard"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4"
-            >
-              {t('dashboard')}
-            </Link>
+            <UserMenu />
           </div>
 
           {/* Mobile menu button */}
@@ -113,14 +109,8 @@ export function Navbar() {
               >
                 {t('contact')}
               </Link>
-              <div className="pt-2">
-                <Link
-                  href="/dashboard"
-                  className="block w-full text-center px-3 py-2 text-base font-medium bg-primary text-primary-foreground hover:bg-primary/90 rounded-md transition-colors"
-                  onClick={toggleMenu}
-                >
-                  {t('dashboard')}
-                </Link>
+              <div className="pt-2 border-t border-border mt-2">
+                <UserMenu />
               </div>
             </div>
           </div>
