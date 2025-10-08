@@ -19,9 +19,16 @@ model User {
   image         String?
   role          Role      @default(USER)
   
+  // Booster specific fields
+  isAvailable   Boolean   @default(true)
+  maxOrders     Int       @default(3)
+  rating        Float     @default(5.0)
+  completedOrders Int     @default(0)
+  
   accounts      Account[]
   sessions      Session[]
-  orders        Order[]
+  orders        Order[]   // Müşteri olarak verdiği siparişler
+  boostJobs     Order[]   @relation("BoosterOrders") // Booster olarak aldığı işler
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -70,23 +77,46 @@ model VerificationToken {
 
 model Order {
   id                    String   @id @default(cuid())
-  userId                String
+  userId                String   // Sipariş veren müşteri
   user                  User     @relation(fields: [userId], references: [id])
   
-  game                  String
+  // Booster assignment
+  boosterId             String?  // Atanan booster
+  booster               User?    @relation("BoosterOrders", fields: [boosterId], references: [id])
+  assignedAt            DateTime?
+  startedAt             DateTime?
+  
+  // Game details
+  game                  String   // lol, valorant
   currentRank           String
   currentDivision       String?
   targetRank            String
   targetDivision        String?
   
+  // Pricing
   price                 Float
-  currency              String   @default("USD")
+  currency              String   @default("TRY")
+  boosterEarnings       Float?   // Booster'ın kazancı
+  
+  // Payment
   stripeSessionId       String?  @unique
   stripePaymentIntentId String?
-  
   paymentStatus         PaymentStatus @default(PENDING)
-  orderStatus           OrderStatus   @default(PENDING)
   
+  // Order status
+  orderStatus           OrderStatus @default(PENDING)
+  
+  // Progress tracking
+  progress              Int      @default(0) // 0-100
+  estimatedHours        Int?     // Tahmini süre (saat)
+  actualHours           Int?     // Gerçek süre
+  
+  // Communication
+  notes                 String?  // Booster notları
+  customerFeedback      String?  // Müşteri geri bildirimi
+  customerRating        Int?     // Müşteri değerlendirmesi (1-5)
+  
+  // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   paidAt    DateTime?
@@ -102,8 +132,10 @@ enum PaymentStatus {
 }
 
 enum OrderStatus {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
+  PENDING      // Sipariş verildi, ödeme bekleniyor
+  PAID         // Ödeme tamamlandı, booster atanıyor
+  ASSIGNED     // Booster atandı
+  IN_PROGRESS  // Boost devam ediyor
+  COMPLETED    // Boost tamamlandı
+  CANCELLED    // Sipariş iptal edildi
 }
