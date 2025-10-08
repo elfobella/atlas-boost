@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
+import { prisma } from '@/lib/prisma';
 import Stripe from 'stripe';
 
 export async function POST(request: Request) {
@@ -83,34 +84,64 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   console.log('Amount total:', session.amount_total);
   console.log('Metadata:', session.metadata);
 
-  // TODO: Save order to database
-  // const order = await db.boostOrders.create({
-  //   stripeSessionId: session.id,
-  //   game: session.metadata?.game,
-  //   currentRank: session.metadata?.currentRank,
-  //   currentDivision: session.metadata?.currentDivision,
-  //   targetRank: session.metadata?.targetRank,
-  //   targetDivision: session.metadata?.targetDivision,
-  //   price: (session.amount_total || 0) / 100,
-  //   customerEmail: session.customer_email,
-  //   paymentStatus: 'succeeded',
-  //   orderStatus: 'pending',
-  //   paidAt: new Date()
-  // });
+  try {
+    // Kullanıcıyı bul veya oluştur
+    const user = await prisma.user.findUnique({
+      where: { email: session.customer_email || '' }
+    });
 
-  // TODO: Send confirmation email
-  // await sendOrderConfirmationEmail(session.customer_email, order);
+    if (!user) {
+      console.error('❌ User not found for email:', session.customer_email);
+      return;
+    }
+
+    // Siparişi oluştur
+    const order = await prisma.order.create({
+      data: {
+        userId: user.id,
+        stripeSessionId: session.id,
+        stripePaymentIntentId: session.payment_intent as string,
+        game: session.metadata?.game || '',
+        currentRank: session.metadata?.currentRank || '',
+        currentDivision: session.metadata?.currentDivision || null,
+        targetRank: session.metadata?.targetRank || '',
+        targetDivision: session.metadata?.targetDivision || null,
+        price: (session.amount_total || 0) / 100,
+        currency: session.currency?.toUpperCase() || 'TRY',
+        paymentStatus: 'COMPLETED',
+        orderStatus: 'PAID',
+        paidAt: new Date()
+      }
+    });
+
+    console.log('✅ Order created successfully:', order.id);
+
+    // TODO: Send confirmation email
+    // await sendOrderConfirmationEmail(session.customer_email, order);
+  } catch (error) {
+    console.error('❌ Error creating order:', error);
+  }
 }
 
 // Handle successful payment intent
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
   console.log('✅ Payment intent succeeded:', paymentIntent.id);
   
-  // TODO: Update payment status in database
-  // await db.boostOrders.updateMany({
-  //   where: { stripePaymentIntentId: paymentIntent.id },
-  //   data: { paymentStatus: 'succeeded' }
-  // });
+  try {
+    // Payment status'u güncelle
+    await prisma.order.updateMany({
+      where: { stripePaymentIntentId: paymentIntent.id },
+      data: { 
+        paymentStatus: 'COMPLETED',
+        orderStatus: 'PAID',
+        paidAt: new Date()
+      }
+    });
+    
+    console.log('✅ Payment status updated successfully');
+  } catch (error) {
+    console.error('❌ Error updating payment status:', error);
+  }
 }
 
 // Handle failed payment
@@ -118,11 +149,20 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
   console.log('❌ Payment intent failed:', paymentIntent.id);
   console.log('Failure reason:', paymentIntent.last_payment_error?.message);
 
-  // TODO: Update order status
-  // await db.boostOrders.updateMany({
-  //   where: { stripePaymentIntentId: paymentIntent.id },
-  //   data: { paymentStatus: 'failed' }
-  // });
+  try {
+    // Order status'u güncelle
+    await prisma.order.updateMany({
+      where: { stripePaymentIntentId: paymentIntent.id },
+      data: { 
+        paymentStatus: 'FAILED',
+        orderStatus: 'CANCELLED'
+      }
+    });
+    
+    console.log('✅ Order status updated to failed');
+  } catch (error) {
+    console.error('❌ Error updating failed payment status:', error);
+  }
 
   // TODO: Send failure notification email
 }
@@ -132,9 +172,18 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
   console.log('💰 Charge refunded:', charge.id);
   console.log('Refund amount:', charge.amount_refunded);
 
-  // TODO: Update order status
-  // await db.boostOrders.updateMany({
-  //   where: { stripePaymentIntentId: charge.payment_intent as string },
-  //   data: { paymentStatus: 'refunded', orderStatus: 'cancelled' }
-  // });
+  try {
+    // Order status'u güncelle
+    await prisma.order.updateMany({
+      where: { stripePaymentIntentId: charge.payment_intent as string },
+      data: { 
+        paymentStatus: 'REFUNDED', 
+        orderStatus: 'CANCELLED' 
+      }
+    });
+    
+    console.log('✅ Order status updated to refunded');
+  } catch (error) {
+    console.error('❌ Error updating refund status:', error);
+  }
 }
