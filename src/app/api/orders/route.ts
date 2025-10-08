@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { calculateBoostPrice } from '@/lib/boost-pricing'
+import { calculateBoostPriceWithCurrency } from '@/lib/boost-pricing'
 
 // GET /api/orders - Kullanıcının siparişlerini listele
 export async function GET(request: NextRequest) {
@@ -108,7 +108,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate price
-    const price = calculateBoostPrice(game, currentRank, targetRank, currentDivision, targetDivision)
+    // Currency ve fiyat hesapla
+    const currency = (body.currency as 'USD' | 'TRY') || 'USD'
+    const price = calculateBoostPriceWithCurrency(
+      game,
+      currentRank,
+      targetRank,
+      currentDivision,
+      targetDivision,
+      currency
+    )
     
     if (price <= 0) {
       return NextResponse.json({ 
@@ -142,7 +151,7 @@ export async function POST(request: NextRequest) {
         targetRank,
         targetDivision,
         price,
-        currency: 'TRY',
+        currency: currency,
         orderStatus: 'PENDING',
         paymentStatus: 'PENDING'
       },

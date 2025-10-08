@@ -19,6 +19,7 @@ async function createTestBooster() {
       console.log('✅ Test booster zaten mevcut!')
       console.log(`📧 Email: ${testEmail}`)
       console.log(`🔑 Role: ${existingBooster.role}`)
+      console.log(`✅ Müsait: ${existingBooster.isAvailable ? 'Evet' : 'Hayır'}`)
       return
     }
 
@@ -50,7 +51,7 @@ async function createTestBooster() {
     console.log(`✅ Müsait: ${booster.isAvailable ? 'Evet' : 'Hayır'}`)
     console.log(`🔢 Max Sipariş: ${booster.maxOrders}`)
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log('🔗 Giriş yapmak için: https://atlas-boost-qraz.vercel.app/auth/signin')
+    console.log('🔗 Giriş yapmak için: http://localhost:3000/auth/signin')
     
   } catch (error) {
     console.error('❌ Hata:', error)

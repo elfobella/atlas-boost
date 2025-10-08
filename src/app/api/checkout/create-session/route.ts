@@ -11,6 +11,7 @@ export async function POST(request: Request) {
       targetRank, 
       targetDivision, 
       price, 
+      currency,
       customerEmail 
     } = body;
 
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
       line_items: [
         {
           price_data: {
-            currency: 'usd',
+            currency: currency?.toLowerCase() || 'usd',
             product_data: {
               name: productName,
               description: productDescription,
