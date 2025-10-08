@@ -15,11 +15,33 @@ function SuccessContent() {
 
   useEffect(() => {
     if (sessionId) {
-      // Optionally fetch session details
-      setLoading(false);
-      // You can fetch session details from your API if needed
+      // Stripe session'ı verify et ve sipariş oluştur
+      verifySessionAndCreateOrder(sessionId);
     }
   }, [sessionId]);
+
+  const verifySessionAndCreateOrder = async (sessionId: string) => {
+    try {
+      const response = await fetch('/api/verify-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ sessionId })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Session verified and order created:', data);
+      } else {
+        console.error('❌ Session verification failed');
+      }
+    } catch (error) {
+      console.error('❌ Error verifying session:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
