@@ -31,7 +31,7 @@ export default function DebugAuth() {
                 onClick={checkEnvVars}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               >
-                Environment Variables'ları Kontrol Et
+                Environment Variables&apos;ları Kontrol Et
               </button>
               
               {Object.keys(envVars).length > 0 && (
