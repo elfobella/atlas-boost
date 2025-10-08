@@ -120,16 +120,16 @@ export function calculateBoostPrice(
     return 0 // Geçersiz rank aralığı
   }
   
-  // Base fiyatlar (TRY)
+  // Base fiyatlar (USD)
   const basePrices = {
     lol: {
-      base: 50,      // Minimum fiyat
-      perTier: 25,   // Her tier için ek fiyat
+      base: 15,      // Minimum fiyat (USD)
+      perTier: 8,    // Her tier için ek fiyat (USD)
       multiplier: 1.2 // Yüksek tier'lar için çarpan
     },
     valorant: {
-      base: 45,
-      perTier: 20,
+      base: 12,
+      perTier: 6,
       multiplier: 1.15
     }
   }
@@ -152,6 +152,29 @@ export function calculateBoostPrice(
   
   // Yuvarla
   return Math.round(price)
+}
+
+// Currency conversion
+export function convertPrice(priceUSD: number, currency: 'USD' | 'TRY'): number {
+  const exchangeRates = {
+    USD: 1,
+    TRY: 35 // 1 USD = 35 TRY (güncel kur)
+  }
+  
+  return Math.round(priceUSD * exchangeRates[currency])
+}
+
+// Fiyat hesaplama (currency ile)
+export function calculateBoostPriceWithCurrency(
+  game: string,
+  currentRank: string,
+  targetRank: string,
+  currentDivision?: string,
+  targetDivision?: string,
+  currency: 'USD' | 'TRY' = 'USD'
+): number {
+  const priceUSD = calculateBoostPrice(game, currentRank, targetRank, currentDivision, targetDivision)
+  return convertPrice(priceUSD, currency)
 }
 
 // Tahmini süre hesaplama (saat cinsinden)
