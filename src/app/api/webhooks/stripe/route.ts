@@ -108,7 +108,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         targetDivision: session.metadata?.targetDivision || null,
         price: (session.amount_total || 0) / 100,
         currency: session.currency?.toUpperCase() || 'TRY',
-        paymentStatus: 'COMPLETED',
+        paymentStatus: 'SUCCEEDED',
         orderStatus: 'PAID',
         paidAt: new Date()
       }
@@ -132,7 +132,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
     await prisma.order.updateMany({
       where: { stripePaymentIntentId: paymentIntent.id },
       data: { 
-        paymentStatus: 'COMPLETED',
+        paymentStatus: 'SUCCEEDED',
         orderStatus: 'PAID',
         paidAt: new Date()
       }

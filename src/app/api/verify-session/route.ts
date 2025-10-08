@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         targetDivision: stripeSession.metadata?.targetDivision || null,
         price: (stripeSession.amount_total || 0) / 100,
         currency: stripeSession.currency?.toUpperCase() || 'TRY',
-        paymentStatus: 'COMPLETED',
+        paymentStatus: 'SUCCEEDED',
         orderStatus: 'PAID',
         paidAt: new Date()
       },
