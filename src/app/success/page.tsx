@@ -22,6 +22,8 @@ function SuccessContent() {
 
   const verifySessionAndCreateOrder = async (sessionId: string) => {
     try {
+      console.log('🔍 Verifying session:', sessionId);
+      
       const response = await fetch('/api/verify-session', {
         method: 'POST',
         headers: {
@@ -30,14 +32,18 @@ function SuccessContent() {
         body: JSON.stringify({ sessionId })
       });
 
+      const data = await response.json();
+      
       if (response.ok) {
-        const data = await response.json();
         console.log('✅ Session verified and order created:', data);
       } else {
-        console.error('❌ Session verification failed');
+        console.error('❌ Session verification failed:', data);
+        console.error('Response status:', response.status);
+        console.error('Response data:', data);
       }
     } catch (error) {
       console.error('❌ Error verifying session:', error);
+      console.error('Error details:', error);
     } finally {
       setLoading(false);
     }

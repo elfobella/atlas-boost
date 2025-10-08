@@ -5,21 +5,29 @@ import { auth } from '@/lib/auth'
 
 export async function POST(request: Request) {
   try {
+    console.log('🔍 Verify session API called');
+    
     const session = await auth()
+    console.log('🔍 Session:', session?.user?.id ? 'Authenticated' : 'Not authenticated');
     
     if (!session?.user?.id) {
+      console.error('❌ No authenticated session found');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()
     const { sessionId } = body
+    console.log('🔍 Session ID:', sessionId);
 
     if (!sessionId) {
+      console.error('❌ No session ID provided');
       return NextResponse.json({ error: 'Session ID required' }, { status: 400 })
     }
 
     // Stripe session'ı retrieve et
+    console.log('🔍 Retrieving Stripe session...');
     const stripeSession = await stripe.checkout.sessions.retrieve(sessionId)
+    console.log('🔍 Stripe session retrieved:', stripeSession.id);
 
     if (!stripeSession) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
