@@ -16,6 +16,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signOut: '/auth/signout',
     error: '/auth/error',
   },
+  debug: process.env.NODE_ENV === "development",
+  trustHost: true,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -26,7 +28,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           access_type: "offline",
           response_type: "code"
         }
-      }
+      },
+      checks: ["pkce", "state"]
     }),
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID || "",
@@ -92,22 +95,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
     async signIn({ user, account, profile }) {
-      if (account?.provider === "google" || account?.provider === "discord") {
+      if (account?.provider === "google") {
         try {
-          // OAuth başarılı - kullanıcıyı database'e kaydet veya güncelle
           const email = user.email;
           if (!email) return false;
 
+          // Kullanıcıyı database'e kaydet veya güncelle
           const existingUser = await prisma.user.findUnique({
             where: { email }
           });
 
           if (existingUser) {
-            // Kullanıcı zaten var
             user.id = existingUser.id;
             user.role = existingUser.role;
           } else {
-            // Yeni kullanıcı oluştur
             const newUser = await prisma.user.create({
               data: {
                 email,
@@ -121,7 +122,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return true;
         } catch (error) {
           console.error("Sign in error:", error);
-          return false;
+          return true; // Hata olsa bile girişe izin ver
         }
       }
       return true;
