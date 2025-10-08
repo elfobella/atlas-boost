@@ -18,8 +18,18 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const skip = (page - 1) * limit
 
-    const whereClause: any = {
-      userId: session.user.id
+    const whereClause: any = {}
+
+    // Role-based access control
+    if (session.user.role === 'ADMIN') {
+      // Admin tüm order'ları görebilir
+      // whereClause boş kalır
+    } else if (session.user.role === 'BOOSTER') {
+      // Booster sadece kendisine atanan order'ları görebilir
+      whereClause.boosterId = session.user.id
+    } else {
+      // Normal user sadece kendi order'larını görebilir
+      whereClause.userId = session.user.id
     }
 
     if (status && status !== 'all') {
