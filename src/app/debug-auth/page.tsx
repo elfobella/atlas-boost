@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 
 export default function DebugAuth() {
   const [envVars, setEnvVars] = useState<Record<string, string>>({})
@@ -52,10 +53,10 @@ export default function DebugAuth() {
                 Gerekli Environment Variables
               </h2>
               <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-                <h3 className="font-medium text-yellow-800 mb-2">Vercel Dashboard'da kontrol edin:</h3>
+                <h3 className="font-medium text-yellow-800 mb-2">Vercel Dashboard&apos;da kontrol edin:</h3>
                 <ul className="list-disc list-inside text-sm text-yellow-700 space-y-1">
-                  <li><code>GOOGLE_CLIENT_ID</code> - Google Cloud Console'dan alın</li>
-                  <li><code>GOOGLE_CLIENT_SECRET</code> - Google Cloud Console'dan alın</li>
+                  <li><code>GOOGLE_CLIENT_ID</code> - Google Cloud Console&apos;dan alın</li>
+                  <li><code>GOOGLE_CLIENT_SECRET</code> - Google Cloud Console&apos;dan alın</li>
                   <li><code>NEXTAUTH_SECRET</code> - Güvenli bir secret key</li>
                   <li><code>NEXTAUTH_URL</code> - <code>https://atlas-boost-qraz.vercel.app</code></li>
                 </ul>
@@ -67,24 +68,24 @@ export default function DebugAuth() {
                 Test Links
               </h2>
               <div className="space-y-2">
-                <a 
+                <Link 
                   href="/auth/signin" 
                   className="block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-center"
                 >
                   Sign In Sayfası
-                </a>
-                <a 
+                </Link>
+                <Link 
                   href="/api/auth/providers" 
                   className="block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-center"
                 >
                   Auth Providers API
-                </a>
-                <a 
+                </Link>
+                <Link 
                   href="/api/auth/session" 
                   className="block bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 text-center"
                 >
                   Session API
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -93,7 +94,7 @@ export default function DebugAuth() {
                 Google OAuth Ayarları
               </h2>
               <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                <h3 className="font-medium text-blue-800 mb-2">Google Cloud Console'da kontrol edin:</h3>
+                <h3 className="font-medium text-blue-800 mb-2">Google Cloud Console&apos;da kontrol edin:</h3>
                 <ul className="list-disc list-inside text-sm text-blue-700 space-y-1">
                   <li><strong>Authorized JavaScript origins:</strong> <code>https://atlas-boost-qraz.vercel.app</code></li>
                   <li><strong>Authorized redirect URIs:</strong> <code>https://atlas-boost-qraz.vercel.app/api/auth/callback/google</code></li>

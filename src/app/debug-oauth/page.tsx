@@ -1,6 +1,7 @@
 "use client"
 
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 export default function DebugOAuthPage() {
   const { data: session, status } = useSession();
@@ -35,18 +36,18 @@ export default function DebugOAuthPage() {
           <div className="bg-card border border-border rounded-lg p-4">
             <h2 className="font-semibold mb-2">Test Links:</h2>
             <div className="space-y-2">
-              <a 
+              <Link 
                 href="/api/auth/signin/google" 
                 className="block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               >
                 Direct Google Sign In
-              </a>
-              <a 
+              </Link>
+              <Link 
                 href="/api/auth/signin" 
                 className="block bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
               >
                 NextAuth Sign In Page
-              </a>
+              </Link>
             </div>
           </div>
         </div>

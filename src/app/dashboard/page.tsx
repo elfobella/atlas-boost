@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { Gamepad2, User, Settings, LogOut, Star, Clock, Shield } from 'lucide-react'
+import { Gamepad2, LogOut, Star, Clock, Shield } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
 export default function DashboardPage() {
