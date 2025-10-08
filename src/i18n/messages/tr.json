@@ -41,6 +41,22 @@
     "readySubtitle": "Hizmetlerimizle oyun hedeflerine ulaşan binlerce memnun müşteriye katılın.",
     "getStarted": "Hemen Başla"
   },
+  "dashboard": {
+    "welcome": "Hoş geldin",
+    "totalOrders": "Toplam Sipariş",
+    "activeOrders": "Aktif Sipariş",
+    "completed": "Tamamlanan",
+    "quickActions": "Hızlı İşlemler",
+    "newOrder": "Yeni Sipariş Ver",
+    "myOrders": "Siparişlerim",
+    "profileSettings": "Profil Ayarları",
+    "recentOrders": "Son Siparişleriniz",
+    "noOrdersYet": "Henüz sipariş vermediniz",
+    "noOrdersDesc": "İlk siparişinizi vermek için yukarıdaki \"Yeni Sipariş Ver\" butonunu kullanın.",
+    "signInRequired": "Giriş Gerekli",
+    "signInRequiredDesc": "Bu sayfaya erişmek için giriş yapmanız gerekiyor.",
+    "signOut": "Çıkış Yap"
+  },
   "rankSelector": {
     "selectGame": "Hangi oyunu boost etmek istiyorsunuz?",
     "selectGameSubtitle": "Oyununuzu seçin ve rank yükseltme sürecinizi başlatın",
