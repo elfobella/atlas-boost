@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { selectOptimalBooster } from '@/lib/booster-assignment'
+import { notificationService } from '@/lib/notification-service'
 
 // POST /api/orders/[id]/assign - Siparişe booster ata
 export async function POST(
@@ -126,8 +127,12 @@ export async function POST(
       }
     })
 
-    // TODO: Booster'a bildirim gönder
-    // TODO: Müşteriye booster bilgileri gönder
+    // Send notifications
+    await notificationService.notifyBoosterAssigned(
+      updatedOrder.id,
+      updatedOrder.userId,
+      selectedBooster.id
+    );
 
     return NextResponse.json({
       message: 'Booster assigned successfully',

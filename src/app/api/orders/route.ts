@@ -40,6 +40,14 @@ export async function GET(request: NextRequest) {
       prisma.order.findMany({
         where: whereClause,
         include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true
+            }
+          },
           booster: {
             select: {
               id: true,

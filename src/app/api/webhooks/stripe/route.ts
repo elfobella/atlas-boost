@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
+import { notificationService } from '@/lib/notification-service';
 import Stripe from 'stripe';
 
 export async function POST(request: Request) {
@@ -116,8 +117,9 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
     console.log('✅ Order created successfully:', order.id);
 
-    // TODO: Send confirmation email
-    // await sendOrderConfirmationEmail(session.customer_email, order);
+    // Send notification
+    await notificationService.notifyOrderCreated(order.id, user.id);
+    await notificationService.notifyPaymentConfirmed(order.id, user.id);
   } catch (error) {
     console.error('❌ Error creating order:', error);
   }
@@ -129,6 +131,10 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
   
   try {
     // Payment status'u güncelle
+    const orders = await prisma.order.findMany({
+      where: { stripePaymentIntentId: paymentIntent.id },
+    });
+    
     await prisma.order.updateMany({
       where: { stripePaymentIntentId: paymentIntent.id },
       data: { 
@@ -137,6 +143,11 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
         paidAt: new Date()
       }
     });
+    
+    // Send notifications
+    for (const order of orders) {
+      await notificationService.notifyPaymentConfirmed(order.id, order.userId);
+    }
     
     console.log('✅ Payment status updated successfully');
   } catch (error) {
@@ -151,6 +162,10 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
 
   try {
     // Order status'u güncelle
+    const orders = await prisma.order.findMany({
+      where: { stripePaymentIntentId: paymentIntent.id },
+    });
+    
     await prisma.order.updateMany({
       where: { stripePaymentIntentId: paymentIntent.id },
       data: { 
@@ -159,12 +174,19 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
       }
     });
     
+    // Send cancellation notifications
+    for (const order of orders) {
+      await notificationService.notifyOrderCancelled(
+        order.id, 
+        order.userId,
+        `Ödeme başarısız oldu: ${paymentIntent.last_payment_error?.message || 'Bilinmeyen hata'}`
+      );
+    }
+    
     console.log('✅ Order status updated to failed');
   } catch (error) {
     console.error('❌ Error updating failed payment status:', error);
   }
-
-  // TODO: Send failure notification email
 }
 
 // Handle refund
@@ -174,6 +196,10 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
 
   try {
     // Order status'u güncelle
+    const orders = await prisma.order.findMany({
+      where: { stripePaymentIntentId: charge.payment_intent as string },
+    });
+    
     await prisma.order.updateMany({
       where: { stripePaymentIntentId: charge.payment_intent as string },
       data: { 
@@ -181,6 +207,15 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
         orderStatus: 'CANCELLED' 
       }
     });
+    
+    // Send refund notifications
+    for (const order of orders) {
+      await notificationService.notifyOrderCancelled(
+        order.id, 
+        order.userId,
+        'Ödemeniz iade edildi. Para iadeniz 3-5 iş günü içinde hesabınıza yansıyacaktır.'
+      );
+    }
     
     console.log('✅ Order status updated to refunded');
   } catch (error) {

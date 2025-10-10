@@ -29,6 +29,8 @@ model User {
   sessions      Session[]
   orders        Order[]   // Müşteri olarak verdiği siparişler
   boostJobs     Order[]   @relation("BoosterOrders") // Booster olarak aldığı işler
+  notifications Notification[]
+  notificationPreference NotificationPreference?
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -138,4 +140,79 @@ enum OrderStatus {
   IN_PROGRESS  // Boost devam ediyor
   COMPLETED    // Boost tamamlandı
   CANCELLED    // Sipariş iptal edildi
+}
+
+model Notification {
+  id          String               @id @default(cuid())
+  userId      String
+  type        NotificationType
+  title       String
+  message     String
+  data        String?              @default("{}")
+  read        Boolean              @default(false)
+  readAt      DateTime?
+  channels    String               @default("[\"in_app\"]")
+  priority    NotificationPriority @default(NORMAL)
+  actionUrl   String?
+  createdAt   DateTime             @default(now())
+  expiresAt   DateTime?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, read])
+  @@index([userId, createdAt])
+  @@index([type])
+}
+
+enum NotificationType {
+  ORDER_CREATED
+  ORDER_PAYMENT_CONFIRMED
+  ORDER_BOOSTER_ASSIGNED
+  ORDER_STARTED
+  ORDER_PROGRESS_UPDATE
+  ORDER_COMPLETED
+  ORDER_CANCELLED
+  BOOST_JOB_ASSIGNED
+  BOOST_JOB_REMINDER
+  BOOST_JOB_DEADLINE
+  BOOST_PAYMENT_PROCESSED
+  MESSAGE_RECEIVED
+  CHAT_SUPPORT_REPLY
+  SYSTEM_MAINTENANCE
+  SYSTEM_UPDATE
+  ACCOUNT_UPDATE
+  SECURITY_ALERT
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model NotificationPreference {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  
+  emailEnabled      Boolean @default(true)
+  pushEnabled       Boolean @default(true)
+  inAppEnabled      Boolean @default(true)
+  
+  orderUpdates      Boolean @default(true)
+  boostUpdates      Boolean @default(true)
+  messages          Boolean @default(true)
+  marketing         Boolean @default(false)
+  systemUpdates     Boolean @default(true)
+  
+  quietHoursEnabled Boolean @default(false)
+  quietHoursStart   String?
+  quietHoursEnd     String?
+  
+  pushTokens        String  @default("[]")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { Gamepad2, LogOut, Star, Clock, Shield, Eye, Settings, TrendingUp, DollarSign } from 'lucide-react'
+import { Gamepad2, LogOut, Star, Clock, Shield, Eye, Settings, TrendingUp, DollarSign, ShoppingBag, Briefcase } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 
@@ -17,6 +17,8 @@ interface Order {
   progress: number;
   createdAt: string;
   boosterEarnings: number;
+  estimatedHours?: number;
+  currency: string;
   user: {
     id: string;
     name: string;
@@ -32,10 +34,14 @@ interface BoosterStats {
   averageRating: number;
 }
 
+type TabType = 'available' | 'my-orders'
+
 export default function BoosterDashboardPage() {
   const { data: session, status } = useSession()
   const t = useTranslations('dashboard')
-  const [orders, setOrders] = useState<Order[]>([])
+  const [activeTab, setActiveTab] = useState<TabType>('available')
+  const [myOrders, setMyOrders] = useState<Order[]>([])
+  const [availableOrders, setAvailableOrders] = useState<Order[]>([])
   const [stats, setStats] = useState<BoosterStats>({
     totalJobs: 0,
     activeJobs: 0,
@@ -44,6 +50,7 @@ export default function BoosterDashboardPage() {
     averageRating: 0
   })
   const [loading, setLoading] = useState(true)
+  const [claiming, setClaiming] = useState<string | null>(null)
 
   // Booster kontrolü
   useEffect(() => {
@@ -55,16 +62,18 @@ export default function BoosterDashboardPage() {
   // Sipariş verilerini çek
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.role === 'BOOSTER') {
-      fetchOrders()
+      fetchMyOrders()
+      fetchAvailableOrders()
     }
   }, [status])
 
-  const fetchOrders = async () => {
+  const fetchMyOrders = async () => {
     try {
-      const response = await fetch('/api/orders?limit=10')
+      // Booster'a atanmış siparişler
+      const response = await fetch('/api/orders?limit=50')
       if (response.ok) {
         const data = await response.json()
-        setOrders(data.orders)
+        setMyOrders(data.orders)
         
         // İstatistikleri hesapla
         const totalJobs = data.pagination.total
@@ -87,9 +96,51 @@ export default function BoosterDashboardPage() {
         })
       }
     } catch (error) {
-      console.error('Error fetching orders:', error)
+      console.error('Error fetching my orders:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchAvailableOrders = async () => {
+    try {
+      // Tüm boosterlara açık siparişler (PAID durumunda)
+      const response = await fetch('/api/orders/available')
+      if (response.ok) {
+        const data = await response.json()
+        setAvailableOrders(data.orders)
+      }
+    } catch (error) {
+      console.error('Error fetching available orders:', error)
+    }
+  }
+
+  const claimOrder = async (orderId: string) => {
+    if (claiming) return
+    
+    setClaiming(orderId)
+    try {
+      const response = await fetch(`/api/orders/${orderId}/claim`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        // Başarılı - verileri yenile
+        await fetchMyOrders()
+        await fetchAvailableOrders()
+        setActiveTab('my-orders') // Siparişlerim sekmesine geç
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Sipariş alınırken hata oluştu')
+      }
+    } catch (error) {
+      console.error('Error claiming order:', error)
+      alert('Sipariş alınırken hata oluştu')
+    } finally {
+      setClaiming(null)
     }
   }
 
@@ -284,7 +335,10 @@ export default function BoosterDashboardPage() {
               </Link>
               
               <button
-                onClick={() => fetchOrders()}
+                onClick={() => {
+                  fetchMyOrders()
+                  fetchAvailableOrders()
+                }}
                 className="block w-full border border-border text-foreground px-4 py-3 rounded-md hover:bg-accent transition-colors text-center"
               >
                 Verileri Yenile
@@ -293,101 +347,222 @@ export default function BoosterDashboardPage() {
           </div>
         </div>
 
-        {/* Active Orders */}
+        {/* Tabs */}
         <div className="mt-8">
-          <h2 className="text-xl font-semibold text-foreground mb-6">Atanan İşlerim</h2>
-          <div className="bg-card border border-border rounded-lg">
-            {orders.length === 0 ? (
-              <div className="p-6">
-                <div className="text-center text-muted-foreground">
-                  <Gamepad2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Henüz size atanan iş yok</p>
-                  <p className="text-sm mt-2">Yeni işler atandığında burada görünecek.</p>
+          <div className="border-b border-border mb-6">
+            <div className="flex space-x-8">
+              <button
+                onClick={() => setActiveTab('available')}
+                className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'available'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <ShoppingBag className="h-4 w-4" />
+                  <span>Aktif Siparişler</span>
+                  {availableOrders.length > 0 && (
+                    <span className="ml-2 bg-primary text-primary-foreground px-2 py-0.5 rounded-full text-xs">
+                      {availableOrders.length}
+                    </span>
+                  )}
                 </div>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="border-b border-border">
-                    <tr>
-                      <th className="text-left p-4 font-medium text-foreground">Oyun</th>
-                      <th className="text-left p-4 font-medium text-foreground">Rank</th>
-                      <th className="text-left p-4 font-medium text-foreground">Müşteri</th>
-                      <th className="text-left p-4 font-medium text-foreground">Kazanç</th>
-                      <th className="text-left p-4 font-medium text-foreground">Durum</th>
-                      <th className="text-left p-4 font-medium text-foreground">İlerleme</th>
-                      <th className="text-left p-4 font-medium text-foreground">İşlemler</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map((order) => (
-                      <tr key={order.id} className="border-b border-border hover:bg-accent/50">
-                        <td className="p-4">
-                          <div className="flex items-center space-x-2">
-                            <Gamepad2 className="h-5 w-5 text-primary" />
-                            <span className="font-medium capitalize">{order.game}</span>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="text-sm">
-                            <span className="text-muted-foreground">{order.currentRank}</span>
-                            <span className="mx-2">→</span>
-                            <span className="font-medium">{order.targetRank}</span>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="text-sm">
-                            <div className="font-medium">{order.user.name}</div>
-                            <div className="text-muted-foreground">{order.user.email}</div>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <span className="font-medium text-green-600">{order.boosterEarnings}₺</span>
-                        </td>
-                        <td className="p-4">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.orderStatus)}`}>
-                            {getStatusText(order.orderStatus)}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          {order.orderStatus === 'IN_PROGRESS' && (
-                            <div className="flex items-center space-x-2">
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div 
-                                  className="bg-primary h-2 rounded-full transition-all duration-300" 
-                                  style={{ width: `${order.progress}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-xs text-muted-foreground">{order.progress}%</span>
-                            </div>
-                          )}
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center space-x-2">
-                            <Link
-                              href={`/dashboard/booster/orders/${order.id}`}
-                              className="inline-flex items-center px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded"
-                            >
-                              <Eye className="h-3 w-3 mr-1" />
-                              Detay
-                            </Link>
-                            {order.orderStatus === 'ASSIGNED' && (
-                              <button
-                                onClick={() => updateOrderProgress(order.id, 0, 'İşe başladım')}
-                                className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-600 hover:bg-green-50 rounded"
-                              >
-                                Başlat
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+              </button>
+              <button
+                onClick={() => setActiveTab('my-orders')}
+                className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'my-orders'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Briefcase className="h-4 w-4" />
+                  <span>Siparişlerim</span>
+                  {myOrders.length > 0 && (
+                    <span className="ml-2 bg-muted text-muted-foreground px-2 py-0.5 rounded-full text-xs">
+                      {myOrders.length}
+                    </span>
+                  )}
+                </div>
+              </button>
+            </div>
           </div>
+
+          {/* Available Orders Tab */}
+          {activeTab === 'available' && (
+            <div className="bg-card border border-border rounded-lg">
+              {availableOrders.length === 0 ? (
+                <div className="p-6">
+                  <div className="text-center text-muted-foreground">
+                    <ShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="font-medium">Şu an müsait sipariş yok</p>
+                    <p className="text-sm mt-2">Yeni siparişler geldiğinde burada görünecek.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="border-b border-border">
+                      <tr>
+                        <th className="text-left p-4 font-medium text-foreground">Oyun</th>
+                        <th className="text-left p-4 font-medium text-foreground">Rank</th>
+                        <th className="text-left p-4 font-medium text-foreground">Müşteri</th>
+                        <th className="text-left p-4 font-medium text-foreground">Kazanç</th>
+                        <th className="text-left p-4 font-medium text-foreground">Tahmini Süre</th>
+                        <th className="text-left p-4 font-medium text-foreground">İşlemler</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {availableOrders.map((order) => (
+                        <tr key={order.id} className="border-b border-border hover:bg-accent/50">
+                          <td className="p-4">
+                            <div className="flex items-center space-x-2">
+                              <Gamepad2 className="h-5 w-5 text-primary" />
+                              <span className="font-medium capitalize">{order.game}</span>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="text-sm">
+                              <span className="text-muted-foreground">{order.currentRank}</span>
+                              <span className="mx-2">→</span>
+                              <span className="font-medium">{order.targetRank}</span>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="text-sm">
+                              <div className="font-medium">{order.user.name}</div>
+                              <div className="text-muted-foreground text-xs">{order.user.email}</div>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="text-sm">
+                              <div className="font-bold text-green-600">{order.boosterEarnings ? `${order.boosterEarnings}₺` : 'Hesaplanıyor...'}</div>
+                              <div className="text-xs text-muted-foreground">
+                                Toplam: {order.price}{order.currency === 'USD' ? '$' : '₺'}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                              <Clock className="h-4 w-4" />
+                              <span>{order.estimatedHours || 'N/A'} saat</span>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <button
+                              onClick={() => claimOrder(order.id)}
+                              disabled={claiming === order.id}
+                              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              {claiming === order.id ? 'Alınıyor...' : 'Siparişi Al'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* My Orders Tab */}
+          {activeTab === 'my-orders' && (
+            <div className="bg-card border border-border rounded-lg">
+              {myOrders.length === 0 ? (
+                <div className="p-6">
+                  <div className="text-center text-muted-foreground">
+                    <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="font-medium">Henüz aldığınız sipariş yok</p>
+                    <p className="text-sm mt-2">Aktif siparişlerden birini alarak başlayabilirsiniz.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="border-b border-border">
+                      <tr>
+                        <th className="text-left p-4 font-medium text-foreground">Oyun</th>
+                        <th className="text-left p-4 font-medium text-foreground">Rank</th>
+                        <th className="text-left p-4 font-medium text-foreground">Müşteri</th>
+                        <th className="text-left p-4 font-medium text-foreground">Kazanç</th>
+                        <th className="text-left p-4 font-medium text-foreground">Durum</th>
+                        <th className="text-left p-4 font-medium text-foreground">İlerleme</th>
+                        <th className="text-left p-4 font-medium text-foreground">İşlemler</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {myOrders.map((order) => (
+                        <tr key={order.id} className="border-b border-border hover:bg-accent/50">
+                          <td className="p-4">
+                            <div className="flex items-center space-x-2">
+                              <Gamepad2 className="h-5 w-5 text-primary" />
+                              <span className="font-medium capitalize">{order.game}</span>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="text-sm">
+                              <span className="text-muted-foreground">{order.currentRank}</span>
+                              <span className="mx-2">→</span>
+                              <span className="font-medium">{order.targetRank}</span>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="text-sm">
+                              <div className="font-medium">{order.user.name}</div>
+                              <div className="text-muted-foreground text-xs">{order.user.email}</div>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <span className="font-medium text-green-600">{order.boosterEarnings}₺</span>
+                          </td>
+                          <td className="p-4">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.orderStatus)}`}>
+                              {getStatusText(order.orderStatus)}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            {order.orderStatus === 'IN_PROGRESS' && (
+                              <div className="flex items-center space-x-2">
+                                <div className="w-full bg-gray-200 rounded-full h-2 min-w-[80px]">
+                                  <div 
+                                    className="bg-primary h-2 rounded-full transition-all duration-300" 
+                                    style={{ width: `${order.progress}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">{order.progress}%</span>
+                              </div>
+                            )}
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center space-x-2">
+                              <Link
+                                href={`/dashboard/booster/orders/${order.id}`}
+                                className="inline-flex items-center px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded"
+                              >
+                                <Eye className="h-3 w-3 mr-1" />
+                                Detay
+                              </Link>
+                              {order.orderStatus === 'ASSIGNED' && (
+                                <button
+                                  onClick={() => updateOrderProgress(order.id, 0, 'İşe başladım')}
+                                  className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-600 hover:bg-green-50 rounded"
+                                >
+                                  Başlat
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
