@@ -5,11 +5,14 @@ import { useTranslations } from 'next-intl';
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { UserMenu } from "@/components/user-menu";
+import { NotificationDropdown } from "@/components/notification-dropdown";
 import { Gamepad2, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 
 export function Navbar() {
   const t = useTranslations('nav');
+  const { data: session } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -56,6 +59,7 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-4">
             <LanguageSwitcher />
             <ThemeToggle />
+            {session && <NotificationDropdown />}
             <UserMenu />
           </div>
 

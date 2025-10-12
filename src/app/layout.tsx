@@ -5,8 +5,11 @@ import { getMessages } from 'next-intl/server';
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProvider } from "@/components/session-provider";
+import { QueryProvider } from "@/components/query-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { PushSubscription } from "@/components/push-subscription";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,20 +40,24 @@ export const metadata: Metadata = {
       >
         <NextIntlClientProvider messages={messages}>
           <SessionProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <div className="flex flex-col min-h-screen">
-                <Navbar />
-                <main className="flex-1">
-                  {children}
-                </main>
-                <Footer />
-              </div>
-            </ThemeProvider>
+            <QueryProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <div className="flex flex-col min-h-screen">
+                  <Navbar />
+                  <main className="flex-1">
+                    {children}
+                  </main>
+                  <Footer />
+                  <PushSubscription />
+                </div>
+                <Toaster position="top-right" />
+              </ThemeProvider>
+            </QueryProvider>
           </SessionProvider>
         </NextIntlClientProvider>
       </body>

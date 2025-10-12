@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
+import { notificationService } from '@/lib/notification-service'
 
 export async function POST(request: Request) {
   try {
@@ -44,8 +45,20 @@ export async function POST(request: Request) {
     })
 
     if (existingOrder) {
+      console.log('⚠️ Order already exists:', existingOrder.id)
+      
+      // Eğer bildirimler daha önce gönderilmediyse, şimdi gönder
+      console.log('📧 Ensuring notifications are sent for existing order...')
+      try {
+        await notificationService.notifyOrderCreated(existingOrder.id, session.user.id)
+        await notificationService.notifyPaymentConfirmed(existingOrder.id, session.user.id)
+        console.log('ℹ️ Order is available for boosters to claim')
+      } catch (error) {
+        console.error('⚠️ Error sending notifications for existing order:', error)
+      }
+      
       return NextResponse.json({ 
-        message: 'Order already exists',
+        message: 'Order already exists, notifications sent',
         order: existingOrder 
       })
     }
@@ -79,6 +92,23 @@ export async function POST(request: Request) {
     })
 
     console.log('✅ Order created from session verification:', order.id)
+
+    // BILDIRIMLERI GÖNDER
+    console.log('📧 Sending order notifications...')
+    try {
+      // 1. Sipariş oluşturuldu bildirimi
+      await notificationService.notifyOrderCreated(order.id, session.user.id)
+      console.log('✅ Order created notification sent')
+      
+      // 2. Ödeme onayı bildirimi
+      await notificationService.notifyPaymentConfirmed(order.id, session.user.id)
+      console.log('✅ Payment confirmed notification sent')
+      
+      console.log('ℹ️ Order is now available for boosters to claim')
+    } catch (notificationError) {
+      console.error('⚠️ Notification error (non-critical):', notificationError)
+      // Hata olsa bile sipariş oluşturuldu, devam et
+    }
 
     return NextResponse.json({
       message: 'Order created successfully',

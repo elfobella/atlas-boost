@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 // GET /api/orders/[id] - Sipariş detaylarını getir
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -14,9 +14,11 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params;
+
     const order = await prisma.order.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id // Sadece kendi siparişini görebilir
       },
       include: {
@@ -54,7 +56,7 @@ export async function GET(
 // PUT /api/orders/[id] - Sipariş durumunu güncelle (sadece booster)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -75,7 +77,7 @@ export async function PUT(
 
     // Siparişi bul
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: { booster: true }
     })
 
@@ -93,7 +95,7 @@ export async function PUT(
     }
 
     // Güncelleme verilerini hazırla
-    const updateData: any = {}
+    const updateData: Record<string, unknown> = {}
 
     // Booster güncellemeleri
     if (isBooster || isAdmin) {
@@ -136,7 +138,7 @@ export async function PUT(
     }
 
     const updatedOrder = await prisma.order.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
       include: {
         booster: {
@@ -169,7 +171,7 @@ export async function PUT(
 // DELETE /api/orders/[id] - Siparişi iptal et
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -180,7 +182,7 @@ export async function DELETE(
 
     const order = await prisma.order.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id // Sadece kendi siparişini iptal edebilir
       }
     })
@@ -197,7 +199,7 @@ export async function DELETE(
     }
 
     const cancelledOrder = await prisma.order.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         orderStatus: 'CANCELLED'
       }
