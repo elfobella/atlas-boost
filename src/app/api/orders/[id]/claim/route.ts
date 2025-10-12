@@ -6,7 +6,7 @@ import { notificationService } from '@/lib/notification-service'
 // POST /api/orders/[id]/claim - Booster siparişi alır
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -20,7 +20,9 @@ export async function POST(
       return NextResponse.json({ error: 'Only boosters can claim orders' }, { status: 403 })
     }
 
-    const orderId = params.id
+    const { id } = await params;
+
+    const orderId = id
 
     // Sipariş kontrolü - transaction içinde yap (race condition önleme)
     const result = await prisma.$transaction(async (tx) => {
@@ -108,11 +110,18 @@ export async function POST(
     })
 
     // Send notifications
+    console.log('📧 Sending claim notifications...');
+    console.log('  - Order ID:', result.id);
+    console.log('  - Customer ID:', result.userId);
+    console.log('  - Booster ID:', session.user.id);
+    
     await notificationService.notifyBoosterAssigned(
       result.id,
       result.userId,
       session.user.id
     );
+    
+    console.log('✅ Claim notifications sent successfully');
 
     return NextResponse.json({
       success: true,
@@ -120,21 +129,23 @@ export async function POST(
       message: 'Order claimed successfully'
     })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error claiming order:', error)
     
     // Kullanıcı dostu hata mesajları
-    if (error.message === 'Order not found') {
-      return NextResponse.json({ error: 'Sipariş bulunamadı' }, { status: 404 })
-    }
-    if (error.message === 'Order already claimed by another booster') {
-      return NextResponse.json({ error: 'Bu sipariş başka bir booster tarafından alındı' }, { status: 409 })
-    }
-    if (error.message === 'Order is not available for claiming') {
-      return NextResponse.json({ error: 'Bu sipariş alınmaya uygun değil' }, { status: 400 })
-    }
-    if (error.message.includes('Maximum active orders limit reached')) {
-      return NextResponse.json({ error: error.message }, { status: 400 })
+    if (error instanceof Error) {
+      if (error.message === 'Order not found') {
+        return NextResponse.json({ error: 'Sipariş bulunamadı' }, { status: 404 })
+      }
+      if (error.message === 'Order already claimed by another booster') {
+        return NextResponse.json({ error: 'Bu sipariş başka bir booster tarafından alındı' }, { status: 409 })
+      }
+      if (error.message === 'Order is not available for claiming') {
+        return NextResponse.json({ error: 'Bu sipariş alınmaya uygun değil' }, { status: 400 })
+      }
+      if (error.message.includes('Maximum active orders limit reached')) {
+        return NextResponse.json({ error: error.message }, { status: 400 })
+      }
     }
     
     return NextResponse.json({ error: 'Sipariş alınırken hata oluştu' }, { status: 500 })

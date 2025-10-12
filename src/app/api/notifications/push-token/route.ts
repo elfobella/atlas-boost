@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       : [];
     
     // Token zaten kayıtlı değilse ekle
-    if (!existingTokens.some((t: any) => JSON.stringify(t.token) === JSON.stringify(token))) {
+    if (!existingTokens.some((t: { token: unknown }) => JSON.stringify(t.token) === JSON.stringify(token))) {
       existingTokens.push({
         token,
         device,

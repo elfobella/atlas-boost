@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { calculateBoostPriceWithCurrency } from '@/lib/boost-pricing'
+import { notificationService } from '@/lib/notification-service'
 
 // GET /api/orders - Kullanıcının siparişlerini listele
 export async function GET(request: NextRequest) {
@@ -18,7 +19,11 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const skip = (page - 1) * limit
 
-    const whereClause: any = {}
+    const whereClause: {
+      userId?: string;
+      boosterId?: string;
+      orderStatus?: string;
+    } = {}
 
     // Role-based access control
     if (session.user.role === 'ADMIN') {
@@ -173,6 +178,15 @@ export async function POST(request: NextRequest) {
         }
       }
     })
+
+    // Send notification
+    console.log('📧 Sending order created notification to user:', session.user.id)
+    try {
+      await notificationService.notifyOrderCreated(order.id, session.user.id)
+    } catch (notificationError) {
+      console.error('Failed to send notification:', notificationError)
+      // Don't fail the order creation if notification fails
+    }
 
     return NextResponse.json(order, { status: 201 })
   } catch (error) {

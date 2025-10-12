@@ -6,11 +6,20 @@ import { notificationService } from '@/lib/notification-service';
 import Stripe from 'stripe';
 
 export async function POST(request: Request) {
+  console.log('🎯 Stripe webhook received');
+  
   const body = await request.text();
   const headersList = await headers();
   const signature = headersList.get('stripe-signature');
 
+  console.log('📝 Webhook details:', {
+    hasBody: !!body,
+    hasSignature: !!signature,
+    bodyLength: body.length,
+  });
+
   if (!signature) {
+    console.error('❌ No signature found in webhook');
     return NextResponse.json(
       { error: 'No signature found' },
       { status: 400 }
@@ -42,9 +51,12 @@ export async function POST(request: Request) {
   }
 
   // Handle the event
+  console.log('📦 Processing webhook event:', event.type);
+  
   try {
     switch (event.type) {
       case 'checkout.session.completed':
+        console.log('💳 Processing checkout.session.completed');
         const session = event.data.object as Stripe.Checkout.Session;
         await handleCheckoutSessionCompleted(session);
         break;
@@ -117,9 +129,15 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
     console.log('✅ Order created successfully:', order.id);
 
-    // Send notification
+    // Send notifications
+    console.log('📧 Sending order created notification...');
     await notificationService.notifyOrderCreated(order.id, user.id);
+    
+    console.log('📧 Sending payment confirmed notification...');
     await notificationService.notifyPaymentConfirmed(order.id, user.id);
+    
+    console.log('✅ All notifications sent for order:', order.id);
+    console.log('ℹ️ Order status: PAID - Available for boosters to claim');
   } catch (error) {
     console.error('❌ Error creating order:', error);
   }

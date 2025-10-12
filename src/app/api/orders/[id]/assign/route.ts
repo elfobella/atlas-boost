@@ -7,7 +7,7 @@ import { notificationService } from '@/lib/notification-service'
 // POST /api/orders/[id]/assign - Siparişe booster ata
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -24,9 +24,11 @@ export async function POST(
     const body = await request.json()
     const { boosterId, autoAssign = false } = body
 
+    const { id } = await params;
+
     // Siparişi bul
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: { user: true }
     })
 
@@ -99,7 +101,7 @@ export async function POST(
 
     // Siparişi güncelle
     const updatedOrder = await prisma.order.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         boosterId: selectedBooster.id,
         boosterEarnings: boosterEarnings,
@@ -128,11 +130,22 @@ export async function POST(
     })
 
     // Send notifications
-    await notificationService.notifyBoosterAssigned(
-      updatedOrder.id,
-      updatedOrder.userId,
-      selectedBooster.id
-    );
+    console.log('📧 Sending booster assignment notifications...')
+    console.log('  - Order ID:', updatedOrder.id)
+    console.log('  - Customer ID:', updatedOrder.userId)
+    console.log('  - Booster ID:', selectedBooster.id)
+    
+    try {
+      await notificationService.notifyBoosterAssigned(
+        updatedOrder.id,
+        updatedOrder.userId,
+        selectedBooster.id
+      );
+      console.log('✅ Notifications sent successfully')
+    } catch (notificationError) {
+      console.error('❌ Failed to send notifications:', notificationError)
+      // Don't fail the assignment if notification fails
+    }
 
     return NextResponse.json({
       message: 'Booster assigned successfully',
@@ -147,7 +160,7 @@ export async function POST(
 // GET /api/orders/[id]/assign - Müsait booster'ları listele
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -162,7 +175,7 @@ export async function GET(
     }
 
     const order = await prisma.order.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!order) {

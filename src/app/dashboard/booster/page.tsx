@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { Gamepad2, LogOut, Star, Clock, Shield, Eye, Settings, TrendingUp, DollarSign, ShoppingBag, Briefcase } from 'lucide-react'
+import { Gamepad2, LogOut, Star, Clock, Shield, Eye, DollarSign, ShoppingBag, Briefcase, Search, SlidersHorizontal, X, ArrowUpDown } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 
@@ -35,11 +35,12 @@ interface BoosterStats {
 }
 
 type TabType = 'available' | 'my-orders'
+type SortOption = 'date-desc' | 'date-asc' | 'price-desc' | 'price-asc' | 'earnings-desc' | 'earnings-asc'
 
 export default function BoosterDashboardPage() {
   const { data: session, status } = useSession()
   const t = useTranslations('dashboard')
-  const [activeTab, setActiveTab] = useState<TabType>('available')
+  const [activeTab, setActiveTab] = useState<TabType>('my-orders')
   const [myOrders, setMyOrders] = useState<Order[]>([])
   const [availableOrders, setAvailableOrders] = useState<Order[]>([])
   const [stats, setStats] = useState<BoosterStats>({
@@ -51,6 +52,61 @@ export default function BoosterDashboardPage() {
   })
   const [loading, setLoading] = useState(true)
   const [claiming, setClaiming] = useState<string | null>(null)
+  
+  // Filters & Sorting
+  const [gameFilter, setGameFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<SortOption>('date-desc')
+  const [searchTerm, setSearchTerm] = useState('')
+
+  // Filtreleme ve sıralama fonksiyonları
+  const applyFiltersAndSort = (orders: Order[]) => {
+    let filtered = [...orders]
+
+    // Oyun filtresi
+    if (gameFilter !== 'all') {
+      filtered = filtered.filter(o => o.game === gameFilter)
+    }
+
+    // Durum filtresi
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(o => o.orderStatus === statusFilter)
+    }
+
+    // Arama (müşteri email veya rank)
+    if (searchTerm) {
+      filtered = filtered.filter(o => 
+        o.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        o.currentRank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        o.targetRank?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    // Sıralama
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'date-desc':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        case 'date-asc':
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        case 'price-desc':
+          return b.price - a.price
+        case 'price-asc':
+          return a.price - b.price
+        case 'earnings-desc':
+          return (b.boosterEarnings || 0) - (a.boosterEarnings || 0)
+        case 'earnings-asc':
+          return (a.boosterEarnings || 0) - (b.boosterEarnings || 0)
+        default:
+          return 0
+      }
+    })
+
+    return filtered
+  }
+
+  const filteredMyOrders = applyFiltersAndSort(myOrders)
+  const filteredAvailableOrders = applyFiltersAndSort(availableOrders)
 
   // Booster kontrolü
   useEffect(() => {
@@ -65,7 +121,8 @@ export default function BoosterDashboardPage() {
       fetchMyOrders()
       fetchAvailableOrders()
     }
-  }, [status])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, session?.user?.role])
 
   const fetchMyOrders = async () => {
     try {
@@ -214,7 +271,7 @@ export default function BoosterDashboardPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Erişim Reddedildi</h1>
-          <p className="text-muted-foreground mb-6">Bu sayfaya sadece booster'lar erişebilir.</p>
+          <p className="text-muted-foreground mb-6">Bu sayfaya sadece boosterlar erişebilir.</p>
           <Link
             href="/dashboard"
             className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
@@ -352,24 +409,6 @@ export default function BoosterDashboardPage() {
           <div className="border-b border-border mb-6">
             <div className="flex space-x-8">
               <button
-                onClick={() => setActiveTab('available')}
-                className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'available'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <div className="flex items-center space-x-2">
-                  <ShoppingBag className="h-4 w-4" />
-                  <span>Aktif Siparişler</span>
-                  {availableOrders.length > 0 && (
-                    <span className="ml-2 bg-primary text-primary-foreground px-2 py-0.5 rounded-full text-xs">
-                      {availableOrders.length}
-                    </span>
-                  )}
-                </div>
-              </button>
-              <button
                 onClick={() => setActiveTab('my-orders')}
                 className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'my-orders'
@@ -379,10 +418,28 @@ export default function BoosterDashboardPage() {
               >
                 <div className="flex items-center space-x-2">
                   <Briefcase className="h-4 w-4" />
-                  <span>Siparişlerim</span>
+                  <span>Atanan İşlerim</span>
                   {myOrders.length > 0 && (
-                    <span className="ml-2 bg-muted text-muted-foreground px-2 py-0.5 rounded-full text-xs">
+                    <span className="ml-2 bg-primary text-primary-foreground px-2 py-0.5 rounded-full text-xs">
                       {myOrders.length}
+                    </span>
+                  )}
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('available')}
+                className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'available'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <ShoppingBag className="h-4 w-4" />
+                  <span>Müsait Siparişler</span>
+                  {availableOrders.length > 0 && (
+                    <span className="ml-2 bg-muted text-muted-foreground px-2 py-0.5 rounded-full text-xs">
+                      {availableOrders.length}
                     </span>
                   )}
                 </div>
@@ -390,32 +447,152 @@ export default function BoosterDashboardPage() {
             </div>
           </div>
 
+          {/* Filters & Search */}
+          <div className="mt-6 p-4 bg-card border border-border rounded-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <SlidersHorizontal className="h-4 w-4 text-primary" />
+              <h3 className="font-semibold text-sm">Filtrele ve Sırala</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Arama */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Müşteri veya rank ara..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-8 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Oyun Filtresi */}
+              <select
+                value={gameFilter}
+                onChange={(e) => setGameFilter(e.target.value)}
+                className="px-3 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="all">Tüm Oyunlar</option>
+                <option value="lol">League of Legends</option>
+                <option value="valorant">Valorant</option>
+              </select>
+
+              {/* Durum Filtresi */}
+              {activeTab === 'my-orders' && (
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-3 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="all">Tüm Durumlar</option>
+                  <option value="ASSIGNED">Atandı</option>
+                  <option value="IN_PROGRESS">Devam Ediyor</option>
+                  <option value="COMPLETED">Tamamlandı</option>
+                </select>
+              )}
+
+              {/* Sıralama */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="px-3 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="date-desc">🕒 En Yeni</option>
+                <option value="date-asc">🕒 En Eski</option>
+                <option value="price-desc">💰 En Pahalı</option>
+                <option value="price-asc">💰 En Ucuz</option>
+                {activeTab === 'my-orders' && (
+                  <>
+                    <option value="earnings-desc">💵 Kazanç (Yüksek)</option>
+                    <option value="earnings-asc">💵 Kazanç (Düşük)</option>
+                  </>
+                )}
+              </select>
+            </div>
+
+            {/* Active Filters Info */}
+            {(gameFilter !== 'all' || statusFilter !== 'all' || searchTerm) && (
+              <div className="mt-3 flex items-center gap-2 text-xs">
+                <span className="text-muted-foreground">Aktif filtreler:</span>
+                {gameFilter !== 'all' && (
+                  <span className="px-2 py-1 bg-primary/10 text-primary rounded-md">
+                    {gameFilter === 'lol' ? 'LoL' : 'Valorant'}
+                  </span>
+                )}
+                {statusFilter !== 'all' && (
+                  <span className="px-2 py-1 bg-primary/10 text-primary rounded-md">
+                    {statusFilter}
+                  </span>
+                )}
+                {searchTerm && (
+                  <span className="px-2 py-1 bg-primary/10 text-primary rounded-md">
+                    "{searchTerm}"
+                  </span>
+                )}
+                <button
+                  onClick={() => {
+                    setGameFilter('all')
+                    setStatusFilter('all')
+                    setSearchTerm('')
+                  }}
+                  className="text-primary hover:text-primary/80 underline"
+                >
+                  Filtreleri Temizle
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Available Orders Tab */}
           {activeTab === 'available' && (
-            <div className="bg-card border border-border rounded-lg">
-              {availableOrders.length === 0 ? (
+            <div>
+              <div className="mt-6 mb-4 p-4 bg-blue-500/5 border border-blue-500/20 rounded-lg">
+                <p className="text-sm text-foreground">
+                  <strong>🛍️ Müsait Siparişler:</strong> Ödeme yapılmış ve booster bekleyen siparişler. İstediğiniz siparişi alabilirsiniz.
+                </p>
+              </div>
+              <div className="bg-card border border-border rounded-lg">
+              {filteredAvailableOrders.length === 0 ? (
                 <div className="p-6">
                   <div className="text-center text-muted-foreground">
                     <ShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p className="font-medium">Şu an müsait sipariş yok</p>
-                    <p className="text-sm mt-2">Yeni siparişler geldiğinde burada görünecek.</p>
+                    <p className="font-medium">
+                      {availableOrders.length === 0 
+                        ? 'Şu an alınabilecek sipariş yok' 
+                        : 'Filtre sonucu gösterilecek sipariş yok'}
+                    </p>
+                    <p className="text-sm mt-2">
+                      {availableOrders.length === 0
+                        ? 'Ödeme yapılan siparişler burada görünecek.'
+                        : 'Farklı filtreler deneyin.'}
+                    </p>
                   </div>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="border-b border-border">
+                    <thead className="border-b border-border bg-muted/30">
                       <tr>
-                        <th className="text-left p-4 font-medium text-foreground">Oyun</th>
-                        <th className="text-left p-4 font-medium text-foreground">Rank</th>
-                        <th className="text-left p-4 font-medium text-foreground">Müşteri</th>
-                        <th className="text-left p-4 font-medium text-foreground">Kazanç</th>
-                        <th className="text-left p-4 font-medium text-foreground">Tahmini Süre</th>
-                        <th className="text-left p-4 font-medium text-foreground">İşlemler</th>
+                        <th className="text-left p-4 font-medium text-foreground text-sm">Oyun</th>
+                        <th className="text-left p-4 font-medium text-foreground text-sm">Rank</th>
+                        <th className="text-left p-4 font-medium text-foreground text-sm">Müşteri</th>
+                        <th className="text-left p-4 font-medium text-foreground text-sm">Ücret</th>
+                        <th className="text-left p-4 font-medium text-foreground text-sm">Kazanç</th>
+                        <th className="text-left p-4 font-medium text-foreground text-sm">Tarih</th>
+                        <th className="text-left p-4 font-medium text-foreground text-sm">İşlemler</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {availableOrders.map((order) => (
+                      {filteredAvailableOrders.map((order) => (
                         <tr key={order.id} className="border-b border-border hover:bg-accent/50">
                           <td className="p-4">
                             <div className="flex items-center space-x-2">
@@ -437,17 +614,28 @@ export default function BoosterDashboardPage() {
                             </div>
                           </td>
                           <td className="p-4">
+                            <div className="text-sm font-semibold">
+                              {order.price}{order.currency === 'USD' ? '$' : '₺'}
+                            </div>
+                          </td>
+                          <td className="p-4">
                             <div className="text-sm">
-                              <div className="font-bold text-green-600">{order.boosterEarnings ? `${order.boosterEarnings}₺` : 'Hesaplanıyor...'}</div>
+                              <div className="font-bold text-green-600">
+                                {(order.price * 0.7).toFixed(2)}{order.currency === 'USD' ? '$' : '₺'}
+                              </div>
                               <div className="text-xs text-muted-foreground">
-                                Toplam: {order.price}{order.currency === 'USD' ? '$' : '₺'}
+                                (%70)
                               </div>
                             </div>
                           </td>
                           <td className="p-4">
-                            <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                              <Clock className="h-4 w-4" />
-                              <span>{order.estimatedHours || 'N/A'} saat</span>
+                            <div className="text-xs text-muted-foreground">
+                              {new Date(order.createdAt).toLocaleDateString('tr-TR', {
+                                day: '2-digit',
+                                month: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
                             </div>
                           </td>
                           <td className="p-4">
@@ -466,17 +654,24 @@ export default function BoosterDashboardPage() {
                 </div>
               )}
             </div>
+            </div>
           )}
 
           {/* My Orders Tab */}
           {activeTab === 'my-orders' && (
-            <div className="bg-card border border-border rounded-lg">
-              {myOrders.length === 0 ? (
+            <div>
+              <div className="mt-6 mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                <p className="text-sm text-foreground">
+                  <strong>📋 Atanan İşlerim:</strong> Size atanan ve üzerinde çalıştığınız siparişler burada görünür.
+                </p>
+              </div>
+              <div className="bg-card border border-border rounded-lg">
+              {filteredMyOrders.length === 0 ? (
                 <div className="p-6">
                   <div className="text-center text-muted-foreground">
                     <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p className="font-medium">Henüz aldığınız sipariş yok</p>
-                    <p className="text-sm mt-2">Aktif siparişlerden birini alarak başlayabilirsiniz.</p>
+                    <p className="font-medium">Size atanan iş yok</p>
+                    <p className="text-sm mt-2">Müsait siparişler sekmesinden iş alabilir veya otomatik atama bekleyebilirsiniz.</p>
                   </div>
                 </div>
               ) : (
@@ -561,6 +756,7 @@ export default function BoosterDashboardPage() {
                   </table>
                 </div>
               )}
+            </div>
             </div>
           )}
         </div>

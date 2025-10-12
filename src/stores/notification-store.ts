@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from 'zustand';
 import Pusher from 'pusher-js';
 
@@ -101,8 +102,16 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
     const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER;
     
+    console.log('🔌 Initializing Pusher:', {
+      userId,
+      hasKey: !!pusherKey,
+      hasCluster: !!pusherCluster,
+      key: pusherKey ? `${pusherKey.substring(0, 10)}...` : 'missing',
+      cluster: pusherCluster || 'missing',
+    });
+    
     if (!pusherKey || !pusherCluster) {
-      console.warn('Pusher credentials not configured');
+      console.error('❌ Pusher credentials not configured!');
       return;
     }
     
@@ -111,12 +120,23 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     });
     
     const channel = pusher.subscribe(`user-${userId}`);
+    console.log('📡 Subscribed to channel:', `user-${userId}`);
     
     channel.bind('notification', (data: Notification) => {
+      console.log('📬 Received notification from Pusher:', data);
       get().addNotification(data);
     });
     
+    channel.bind('pusher:subscription_succeeded', () => {
+      console.log('✅ Pusher subscription succeeded');
+    });
+    
+    channel.bind('pusher:subscription_error', (error: any) => {
+      console.error('❌ Pusher subscription error:', error);
+    });
+    
     set({ pusher });
+    console.log('✅ Pusher initialized successfully');
   },
   
   disconnectPusher: () => {

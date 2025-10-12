@@ -15,7 +15,14 @@ export async function GET(request: NextRequest) {
     const unreadOnly = searchParams.get('unreadOnly') === 'true';
     const type = searchParams.get('type');
 
-    const where: any = {
+    type WhereType = {
+      userId: string;
+      read?: boolean;
+      type?: string;
+      OR: Array<{ expiresAt: null | { gt: Date } }>;
+    };
+    
+    const where: WhereType = {
       userId: session.user.id,
       OR: [
         { expiresAt: null },
@@ -33,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     const [notifications, total, unreadCount] = await Promise.all([
       prisma.notification.findMany({
-        where,
+        where: where as any,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,

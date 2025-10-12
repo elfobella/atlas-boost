@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from './prisma';
 import { sendEmail } from './email-service';
 import { sendPushNotification } from './push-service';
@@ -20,7 +21,7 @@ interface NotificationData {
   priority?: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
   channels?: ('in_app' | 'email' | 'push')[];
   actionUrl?: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   expiresAt?: Date;
 }
 
@@ -41,9 +42,22 @@ export class NotificationService {
       expiresAt,
     } = notificationData;
 
+    console.log('📬 NotificationService: Sending notification', {
+      userId,
+      type,
+      title,
+      priority,
+      requestedChannels: channels,
+    });
+
     try {
       // 1. Kullanıcı tercihlerini kontrol et
       const preferences = await this.getUserPreferences(userId);
+      console.log('✓ User preferences loaded:', {
+        inAppEnabled: preferences.inAppEnabled,
+        emailEnabled: preferences.emailEnabled,
+        pushEnabled: preferences.pushEnabled,
+      });
       
       // 2. Sessiz saatleri kontrol et
       if (await this.isQuietHours(preferences, priority)) {
@@ -55,14 +69,16 @@ export class NotificationService {
 
       // 3. Hangi kanalların aktif olduğunu belirle
       const activeChannels = this.getActiveChannels(channels, preferences);
+      console.log('✓ Active channels determined:', activeChannels);
 
       // 4. Bildirim veritabanına kaydet (in-app için)
       let notification = null;
       if (activeChannels.includes('in_app')) {
+        console.log('💾 Saving notification to database...');
         notification = await prisma.notification.create({
           data: {
             userId,
-            type: type as any,
+            type: type as 'ORDER_CREATED' | 'ORDER_PAYMENT_CONFIRMED' | 'ORDER_BOOSTER_ASSIGNED' | 'ORDER_STARTED' | 'ORDER_PROGRESS_UPDATE' | 'ORDER_COMPLETED' | 'ORDER_CANCELLED' | 'BOOST_JOB_ASSIGNED' | 'BOOST_JOB_REMINDER' | 'BOOST_JOB_DEADLINE' | 'BOOST_PAYMENT_PROCESSED' | 'MESSAGE_RECEIVED' | 'CHAT_SUPPORT_REPLY' | 'SYSTEM_MAINTENANCE' | 'SYSTEM_UPDATE' | 'ACCOUNT_UPDATE' | 'SECURITY_ALERT',
             title,
             message,
             priority: priority as any,
@@ -177,22 +193,31 @@ export class NotificationService {
    */
   private async broadcastNotification(userId: string, notification: any) {
     try {
-      await pusher.trigger(
-        `user-${userId}`,
-        'notification',
-        {
-          id: notification.id,
-          type: notification.type,
-          title: notification.title,
-          message: notification.message,
-          priority: notification.priority,
-          actionUrl: notification.actionUrl,
-          data: notification.data,
-          createdAt: notification.createdAt,
-        }
-      );
+      const channel = `user-${userId}`;
+      const eventData = {
+        id: notification.id,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        priority: notification.priority,
+        actionUrl: notification.actionUrl,
+        data: notification.data,
+        createdAt: notification.createdAt,
+      };
+      
+      console.log('📡 Broadcasting to Pusher:', {
+        channel,
+        event: 'notification',
+        hasData: !!eventData,
+      });
+      
+      await pusher.trigger(channel, 'notification', eventData);
+      console.log('✅ Pusher broadcast successful');
     } catch (error) {
-      console.error('Pusher broadcast error:', error);
+      console.error('❌ Pusher broadcast error:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', error.message);
+      }
     }
   }
 
@@ -339,14 +364,22 @@ export class NotificationService {
   }
 
   async notifyBoosterAssigned(orderId: string, userId: string, boosterId: string) {
+    console.log('🎯 notifyBoosterAssigned called:', { orderId, userId, boosterId });
+    
     const [order, booster] = await Promise.all([
       prisma.order.findUnique({ where: { id: orderId } }),
       prisma.user.findUnique({ where: { id: boosterId } }),
     ]);
 
-    if (!order || !booster) return;
+    if (!order || !booster) {
+      console.error('❌ Order or booster not found:', { order: !!order, booster: !!booster });
+      return;
+    }
+
+    console.log('✓ Order and booster found, sending notifications...');
 
     // Müşteriye bildir
+    console.log('📧 Sending notification to customer:', userId);
     await this.sendNotification({
       userId,
       type: 'ORDER_BOOSTER_ASSIGNED',
@@ -362,6 +395,7 @@ export class NotificationService {
     });
 
     // Booster'a bildir
+    console.log('📧 Sending notification to booster:', boosterId);
     await this.sendNotification({
       userId: boosterId,
       type: 'BOOST_JOB_ASSIGNED',
@@ -377,6 +411,7 @@ export class NotificationService {
         targetRank: order.targetRank,
       },
     });
+    console.log('✅ Booster notifications completed');
   }
 
   async notifyOrderStarted(orderId: string, userId: string, boosterId: string) {
