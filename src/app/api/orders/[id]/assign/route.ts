@@ -159,7 +159,7 @@ export async function POST(
 
 // GET /api/orders/[id]/assign - Müsait booster'ları listele
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -174,8 +174,10 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
+    const { id } = await params;
+
     const order = await prisma.order.findUnique({
-      where: { id: id }
+      where: { id }
     })
 
     if (!order) {

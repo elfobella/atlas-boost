@@ -75,9 +75,11 @@ export async function PUT(
       customerFeedback 
     } = body
 
+    const { id } = await params;
+
     // Siparişi bul
     const order = await prisma.order.findUnique({
-      where: { id: id },
+      where: { id },
       include: { booster: true }
     })
 
@@ -170,7 +172,7 @@ export async function PUT(
 
 // DELETE /api/orders/[id] - Siparişi iptal et
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -180,9 +182,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params;
+
     const order = await prisma.order.findFirst({
       where: {
-        id: id,
+        id,
         userId: session.user.id // Sadece kendi siparişini iptal edebilir
       }
     })

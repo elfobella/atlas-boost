@@ -5,7 +5,7 @@ import { useNotifications } from '@/hooks/use-notifications';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import Link from 'next/link';
-import { Bell, X, Check, CheckCheck, Trash2 } from 'lucide-react';
+import { Bell, Check, CheckCheck, Trash2 } from 'lucide-react';
 
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);

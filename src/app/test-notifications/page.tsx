@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react/no-unescaped-entities */
 'use client';
 
 import { useSession } from 'next-auth/react';
@@ -18,7 +19,7 @@ interface Order {
 }
 
 export default function TestNotificationsPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [testResult, setTestResult] = useState<any>(null);

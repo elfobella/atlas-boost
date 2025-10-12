@@ -1,9 +1,10 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client'
 
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { Gamepad2, LogOut, Star, Clock, Shield, Eye, DollarSign, ShoppingBag, Briefcase, Search, SlidersHorizontal, X, ArrowUpDown } from 'lucide-react'
+import { Gamepad2, LogOut, Star, Clock, Shield, Eye, DollarSign, ShoppingBag, Briefcase, Search, SlidersHorizontal, X } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 

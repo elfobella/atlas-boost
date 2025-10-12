@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
-        where: whereClause,
+        where: whereClause as any,
         include: {
           user: {
             select: {
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit
       }),
-      prisma.order.count({ where: whereClause })
+      prisma.order.count({ where: whereClause as any })
     ])
 
     return NextResponse.json({
