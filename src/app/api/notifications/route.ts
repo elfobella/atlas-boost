@@ -7,7 +7,18 @@ export async function GET(request: NextRequest) {
   try {
     console.log('🔍 Notifications API: Starting request');
     
-    const session = await auth();
+    // Check auth with error handling
+    let session;
+    try {
+      session = await auth();
+    } catch (authError) {
+      console.error('❌ Notifications API: Auth error:', authError);
+      return NextResponse.json({ 
+        error: 'Authentication service error',
+        details: authError instanceof Error ? authError.message : 'Unknown auth error'
+      }, { status: 500 });
+    }
+    
     console.log('🔍 Notifications API: Session check', { 
       hasSession: !!session, 
       hasUser: !!session?.user, 

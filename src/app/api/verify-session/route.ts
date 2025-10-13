@@ -8,7 +8,18 @@ export async function POST(request: Request) {
   try {
     console.log('🔍 Verify session API called');
     
-    const session = await auth()
+    // Check auth with error handling
+    let session;
+    try {
+      session = await auth();
+    } catch (authError) {
+      console.error('❌ Auth error:', authError);
+      return NextResponse.json({ 
+        error: 'Authentication service error',
+        details: authError instanceof Error ? authError.message : 'Unknown auth error'
+      }, { status: 500 })
+    }
+    
     console.log('🔍 Session:', session?.user?.id ? 'Authenticated' : 'Not authenticated');
     
     if (!session?.user?.id) {
@@ -124,7 +135,14 @@ export async function POST(request: Request) {
     })
 
   } catch (error) {
-    console.error('Error verifying session:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('❌ Error verifying session:', {
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    })
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined
+    }, { status: 500 })
   }
 }
