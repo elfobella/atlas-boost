@@ -1,11 +1,9 @@
 "use client"
 
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Check } from 'lucide-react';
 
 export default function PricingPage() {
-  const t = useTranslations('pricing');
 
   const games = [
     {

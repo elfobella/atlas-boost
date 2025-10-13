@@ -1,11 +1,8 @@
 "use client"
 
-import { useTranslations } from 'next-intl';
 import { Mail, MessageCircle, Clock, MapPin } from 'lucide-react';
 
 export default function ContactPage() {
-  const t = useTranslations('contact');
-
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16">
@@ -15,7 +12,7 @@ export default function ContactPage() {
             Get in Touch
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Have questions? We're here to help 24/7
+            Have questions? We&apos;re here to help 24/7
           </p>
         </div>
 
@@ -29,7 +26,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">Email Support</h3>
                     <p className="text-muted-foreground mb-3">
-                      Send us an email and we'll respond within 24 hours
+                      Send us an email and we&apos;ll respond within 24 hours
                     </p>
                     <a 
                       href="mailto:support@atlasboost.com" 
@@ -65,7 +62,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">Support Hours</h3>
                     <p className="text-muted-foreground">
-                      24/7 - We're always here to help
+                      24/7 - We&apos;re always here to help
                     </p>
                   </div>
                 </div>
