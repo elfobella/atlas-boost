@@ -182,7 +182,9 @@ export function calculateEstimatedHours(
   game: string,
   currentRank: string,
   targetRank: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _currentDivision?: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _targetDivision?: string
 ): number {
   const rankDiff = getRankDifference(game, currentRank, targetRank)

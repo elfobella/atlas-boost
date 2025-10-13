@@ -1,7 +1,6 @@
 "use client"
 
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
 import { User, Mail, Calendar, Shield, Save, Edit3 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
@@ -29,7 +28,7 @@ export default function ProfilePage() {
         id: session.user.id,
         name: session.user.name || '',
         email: session.user.email || '',
-        createdAt: session.user.createdAt || new Date().toISOString(),
+        createdAt: new Date().toISOString(),
         role: session.user.role || 'USER'
       })
       setFormData({

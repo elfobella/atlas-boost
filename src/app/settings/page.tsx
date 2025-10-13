@@ -1,7 +1,6 @@
 "use client"
 
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
 import { Settings as SettingsIcon, Bell, Shield, Globe, Palette } from 'lucide-react'
 import Link from 'next/link'
 
