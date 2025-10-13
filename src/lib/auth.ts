@@ -74,14 +74,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     })
   ],
   callbacks: {
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = user.role || "USER";
-      }
-      if (account && profile) {
-        token.email = profile.email;
-        token.name = profile.name;
+        token.rating = user.rating || 5.0;
       }
       return token;
     },
@@ -91,10 +88,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.role = (token.role as string) || "USER";
         session.user.email = token.email as string;
         session.user.name = token.name as string;
+        session.user.rating = (token.rating as number) || 5.0;
       }
       return session;
     },
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       if (account?.provider === "google") {
         try {
           const email = user.email;

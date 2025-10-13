@@ -235,7 +235,7 @@ export default function BoosterDashboardPage() {
       })
 
       if (response.ok) {
-        fetchOrders() // Verileri yenile
+        fetchMyOrders() // Verileri yenile
       }
     } catch (error) {
       console.error('Error updating order:', error)
