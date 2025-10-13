@@ -192,5 +192,13 @@
     "stillHaveQuestionsDescription": "Aradığınız cevabı bulamadıysanız müşteri destek ekibimizle iletişime geçin",
     "contactSupport": "Destek ile İletişime Geç",
     "viewOrders": "Siparişlerimi Görüntüle"
+  },
+  "privacy": {
+    "title": "Gizlilik Politikası",
+    "subtitle": "Kişisel verilerinizin korunması bizim için çok önemli"
+  },
+  "cookies": {
+    "title": "Çerez Politikası",
+    "subtitle": "Web sitemizde çerezlerin nasıl kullanıldığını öğrenin"
   }
 }

@@ -176,5 +176,13 @@
     "stillHaveQuestionsDescription": "If you couldn't find the answer you're looking for, contact our customer support team",
     "contactSupport": "Contact Support",
     "viewOrders": "View My Orders"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "subtitle": "Protecting your personal data is very important to us"
+  },
+  "cookies": {
+    "title": "Cookie Policy",
+    "subtitle": "Learn how cookies are used on our website"
   }
 }
