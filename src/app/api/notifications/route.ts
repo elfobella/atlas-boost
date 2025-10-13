@@ -5,8 +5,17 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('🔍 Notifications API: Starting request');
+    
     const session = await auth();
+    console.log('🔍 Notifications API: Session check', { 
+      hasSession: !!session, 
+      hasUser: !!session?.user, 
+      userId: session?.user?.id 
+    });
+    
     if (!session?.user?.id) {
+      console.log('❌ Notifications API: Unauthorized - no session or user ID');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -39,6 +48,8 @@ export async function GET(request: NextRequest) {
       where.type = type;
     }
 
+    console.log('🔍 Notifications API: About to query database', { where, page, limit });
+    
     const [notifications, total, unreadCount] = await Promise.all([
       prisma.notification.findMany({
         where: where as any,
@@ -54,6 +65,12 @@ export async function GET(request: NextRequest) {
         },
       }),
     ]);
+    
+    console.log('✅ Notifications API: Database query successful', { 
+      notificationsCount: notifications.length, 
+      total, 
+      unreadCount 
+    });
 
     // Parse JSON strings
     const parsedNotifications = notifications.map(n => ({
@@ -73,9 +90,16 @@ export async function GET(request: NextRequest) {
       unreadCount,
     });
   } catch (error) {
-    console.error('Get notifications error:', error);
+    console.error('❌ Notifications API: Error occurred:', {
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    });
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
