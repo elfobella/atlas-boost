@@ -1,10 +1,8 @@
 "use client"
 
-import { useTranslations } from 'next-intl';
 import { Cookie, Settings, Shield, BarChart3 } from 'lucide-react';
 
 export default function CookiesPage() {
-  const t = useTranslations('cookies');
 
   const cookieTypes = [
     {
@@ -115,7 +113,7 @@ export default function CookiesPage() {
               </p>
               <p>
                 <strong className="text-foreground">Çerez Silme:</strong> Mevcut çerezleri tarayıcınızın 
-                "Gizlilik ve Güvenlik" bölümünden silebilirsiniz.
+                &quot;Gizlilik ve Güvenlik&quot; bölümünden silebilirsiniz.
               </p>
               <p>
                 <strong className="text-foreground">Otomatik Silme:</strong> Tarayıcınızı kapatıp açtığınızda 

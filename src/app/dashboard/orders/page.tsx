@@ -1,9 +1,8 @@
 "use client"
 
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { Gamepad2, Eye, Star, Clock, Shield, AlertCircle } from 'lucide-react'
+import { Gamepad2, Eye, Star } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 interface Order {
@@ -23,8 +22,7 @@ interface Order {
 }
 
 export default function OrdersPage() {
-  const { data: session, status } = useSession()
-  const t = useTranslations('dashboard')
+  const { status } = useSession()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')

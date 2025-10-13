@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 /**
  * Kullanıcının kendi siparişlerini listeler (test için basitleştirilmiş)
  */
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth();
     

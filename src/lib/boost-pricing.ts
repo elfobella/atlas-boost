@@ -182,8 +182,8 @@ export function calculateEstimatedHours(
   game: string,
   currentRank: string,
   targetRank: string,
-  currentDivision?: string,
-  targetDivision?: string
+  _currentDivision?: string,
+  _targetDivision?: string
 ): number {
   const rankDiff = getRankDifference(game, currentRank, targetRank)
   

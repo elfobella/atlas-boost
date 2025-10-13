@@ -6,8 +6,7 @@ import { Settings as SettingsIcon, Bell, Shield, Globe, Palette } from 'lucide-r
 import Link from 'next/link'
 
 export default function SettingsPage() {
-  const { data: session, status } = useSession()
-  const t = useTranslations('dashboard')
+  const { status } = useSession()
 
   if (status === 'loading') {
     return (

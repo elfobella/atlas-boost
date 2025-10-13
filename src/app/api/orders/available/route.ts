@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // GET /api/orders/available - PAID durumundaki siparişleri getir (tüm boosterlara açık)
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth()
     

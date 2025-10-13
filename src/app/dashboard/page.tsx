@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { Gamepad2, LogOut, Star, Clock, Shield, Plus, Eye, Settings } from 'lucide-react'
+import { Gamepad2, LogOut, Star, Clock, Shield, Eye } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 

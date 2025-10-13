@@ -1,10 +1,8 @@
 "use client"
 
-import { useTranslations } from 'next-intl';
 import { Shield, Eye, Lock, Database, UserCheck } from 'lucide-react';
 
 export default function PrivacyPage() {
-  const t = useTranslations('privacy');
 
   const sections = [
     {

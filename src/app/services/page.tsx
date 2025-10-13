@@ -1,7 +1,7 @@
 "use client"
 
 import { useTranslations } from 'next-intl';
-import { CheckCircle, Clock, Shield, Trophy, Users, Zap } from 'lucide-react';
+import { CheckCircle, Clock, Shield, Trophy } from 'lucide-react';
 
 export default function ServicesPage() {
   const t = useTranslations('services');
