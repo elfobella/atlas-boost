@@ -6,8 +6,12 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider  = "postgresql"
+  // Vercel Postgres (Storage) provides these environment variables automatically when the integration is connected.
+  // url uses pooled connection for Prisma Client in serverless environments.
+  url       = env("POSTGRES_PRISMA_URL")
+  // directUrl is used by Prisma Migrate for non-pooled, long-lived connections.
+  directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model User {
