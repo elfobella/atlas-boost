@@ -138,5 +138,43 @@
     "haveQuestion": "Have a question?",
     "contactSupport": "Contact Customer Support",
     "loading": "Checking payment information..."
+  },
+  "services": {
+    "title": "Our Services",
+    "subtitle": "Achieve your goals with professional game boosting services",
+    "ctaTitle": "Get Started Now",
+    "ctaDescription": "Take your gaming experience to the next level with our expert team",
+    "getStarted": "Get Started",
+    "contactUs": "Contact Us"
+  },
+  "games": {
+    "title": "Supported Games",
+    "subtitle": "Professional boosting services for the most popular games",
+    "startBoost": "Start Boost",
+    "whyChooseUs": "Why Choose Us?",
+    "feature1Title": "Professional Boosters",
+    "feature1Description": "We only work with the highest-rated players",
+    "feature2Title": "Secure Process",
+    "feature2Description": "Your account security is our priority",
+    "feature3Title": "Fast Delivery",
+    "feature3Description": "Reach your target rank in 2-6 days"
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "subtitle": "By using our services, you agree to these terms and conditions",
+    "introduction": "Introduction",
+    "introductionContent": "These terms of service outline the rules and conditions you must follow when using the AtlastBoost platform. By using our services, you agree to these terms.",
+    "detailedTerms": "Detailed Terms",
+    "questions": "Have Questions?",
+    "questionsDescription": "If you have questions about our terms of service, please contact us",
+    "contactUs": "Contact Us"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Answers to the most commonly asked questions",
+    "stillHaveQuestions": "Still have questions?",
+    "stillHaveQuestionsDescription": "If you couldn't find the answer you're looking for, contact our customer support team",
+    "contactSupport": "Contact Support",
+    "viewOrders": "View My Orders"
   }
 }

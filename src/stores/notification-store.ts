@@ -111,32 +111,36 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     });
     
     if (!pusherKey || !pusherCluster) {
-      console.error('❌ Pusher credentials not configured!');
+      console.warn('⚠️ Pusher credentials not configured - real-time notifications disabled');
       return;
     }
     
-    const pusher = new Pusher(pusherKey, {
-      cluster: pusherCluster,
-    });
-    
-    const channel = pusher.subscribe(`user-${userId}`);
-    console.log('📡 Subscribed to channel:', `user-${userId}`);
-    
-    channel.bind('notification', (data: Notification) => {
-      console.log('📬 Received notification from Pusher:', data);
-      get().addNotification(data);
-    });
-    
-    channel.bind('pusher:subscription_succeeded', () => {
-      console.log('✅ Pusher subscription succeeded');
-    });
-    
-    channel.bind('pusher:subscription_error', (error: any) => {
-      console.error('❌ Pusher subscription error:', error);
-    });
-    
-    set({ pusher });
-    console.log('✅ Pusher initialized successfully');
+    try {
+      const pusher = new Pusher(pusherKey, {
+        cluster: pusherCluster,
+      });
+      
+      const channel = pusher.subscribe(`user-${userId}`);
+      console.log('📡 Subscribed to channel:', `user-${userId}`);
+      
+      channel.bind('notification', (data: Notification) => {
+        console.log('📬 Received notification from Pusher:', data);
+        get().addNotification(data);
+      });
+      
+      channel.bind('pusher:subscription_succeeded', () => {
+        console.log('✅ Pusher subscription succeeded');
+      });
+      
+      channel.bind('pusher:subscription_error', (error: any) => {
+        console.error('❌ Pusher subscription error:', error);
+      });
+      
+      set({ pusher });
+      console.log('✅ Pusher initialized successfully');
+    } catch (error) {
+      console.error('❌ Pusher initialization error:', error);
+    }
   },
   
   disconnectPusher: () => {

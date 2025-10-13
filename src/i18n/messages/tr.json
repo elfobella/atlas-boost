@@ -154,5 +154,43 @@
     "haveQuestion": "Sorunuz mu var?",
     "contactSupport": "Müşteri Desteği ile İletişime Geçin",
     "loading": "Ödeme bilgileri kontrol ediliyor..."
+  },
+  "services": {
+    "title": "Hizmetlerimiz",
+    "subtitle": "Profesyonel oyun boost hizmetleri ile hedeflerinize ulaşın",
+    "ctaTitle": "Hemen Başlayın",
+    "ctaDescription": "Uzman ekibimizle oyun deneyiminizi bir üst seviyeye taşıyın",
+    "getStarted": "Başlayın",
+    "contactUs": "İletişime Geçin"
+  },
+  "games": {
+    "title": "Desteklenen Oyunlar",
+    "subtitle": "En popüler oyunlar için profesyonel boost hizmetleri",
+    "startBoost": "Boost Başlat",
+    "whyChooseUs": "Neden Bizi Seçmelisiniz?",
+    "feature1Title": "Profesyonel Boosterlar",
+    "feature1Description": "Sadece en yüksek puanlı oyuncularla çalışıyoruz",
+    "feature2Title": "Güvenli İşlem",
+    "feature2Description": "Hesap güvenliğiniz bizim önceliğimiz",
+    "feature3Title": "Hızlı Teslimat",
+    "feature3Description": "2-6 gün içinde hedef rankınıza ulaşın"
+  },
+  "terms": {
+    "title": "Kullanım Koşulları",
+    "subtitle": "Hizmetlerimizi kullanarak bu şartları kabul etmiş olursunuz",
+    "introduction": "Giriş",
+    "introductionContent": "Bu kullanım koşulları, AtlastBoost platformunu kullanırken uymanız gereken kuralları ve koşulları belirtir. Hizmetlerimizi kullanarak bu şartları kabul etmiş olursunuz.",
+    "detailedTerms": "Detaylı Şartlar",
+    "questions": "Sorularınız mı var?",
+    "questionsDescription": "Kullanım koşulları hakkında sorularınız varsa bizimle iletişime geçin",
+    "contactUs": "İletişime Geçin"
+  },
+  "faq": {
+    "title": "Sıkça Sorulan Sorular",
+    "subtitle": "En çok merak edilen soruların cevapları",
+    "stillHaveQuestions": "Hala sorularınız mı var?",
+    "stillHaveQuestionsDescription": "Aradığınız cevabı bulamadıysanız müşteri destek ekibimizle iletişime geçin",
+    "contactSupport": "Destek ile İletişime Geç",
+    "viewOrders": "Siparişlerimi Görüntüle"
   }
 }

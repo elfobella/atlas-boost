@@ -5,13 +5,24 @@ import { sendPushNotification } from './push-service';
 import Pusher from 'pusher';
 
 // Pusher Configuration
-const pusher = new Pusher({
-  appId: process.env.PUSHER_APP_ID!,
-  key: process.env.PUSHER_KEY!,
-  secret: process.env.PUSHER_SECRET!,
-  cluster: process.env.PUSHER_CLUSTER || 'eu',
-  useTLS: true,
-});
+let pusher: Pusher | null = null;
+
+try {
+  if (process.env.PUSHER_APP_ID && process.env.PUSHER_KEY && process.env.PUSHER_SECRET) {
+    pusher = new Pusher({
+      appId: process.env.PUSHER_APP_ID,
+      key: process.env.PUSHER_KEY,
+      secret: process.env.PUSHER_SECRET,
+      cluster: process.env.PUSHER_CLUSTER || 'eu',
+      useTLS: true,
+    });
+    console.log('✅ Pusher configured successfully');
+  } else {
+    console.warn('⚠️ Pusher credentials not configured - real-time notifications disabled');
+  }
+} catch (error) {
+  console.error('❌ Pusher configuration error:', error);
+}
 
 interface NotificationData {
   userId: string;
@@ -192,6 +203,11 @@ export class NotificationService {
    * Real-time bildirim yayını (Pusher)
    */
   private async broadcastNotification(userId: string, notification: any) {
+    if (!pusher) {
+      console.warn('⚠️ Pusher not configured - skipping real-time broadcast');
+      return;
+    }
+
     try {
       const channel = `user-${userId}`;
       const eventData = {
